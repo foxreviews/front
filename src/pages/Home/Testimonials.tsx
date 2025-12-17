@@ -1,6 +1,6 @@
 export default function Testimonials() {
   return (
-    <section className="py-24 px-24 relative w-full bg-[url('/assets/testimonial.png')] bg-cover bg-center">
+    <section className="py-24 relative w-full bg-[url('/assets/testimonial.png')] bg-cover bg-center">
       <div>
        <h2 className="mt-6 text-center text-3xl sm:text-4xl lg:text-5xl xl:text-4xl font-bold tracking-tight text-[#26354e]">
           What Say {" "}
