@@ -2,6 +2,7 @@ import Hero from "./Hero";
 import PlaceListing from "./PlaceListing";
 import PopularCategories from "./PopularCategories";
 import PopularListing from "./PopularListing";
+import StatsSection from "./StatsSection";
 import Testimonials from "./Testimonials";
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
       <PopularListing />
       <PopularCategories />
       <PlaceListing />
+      <StatsSection/>
       <Testimonials/>
     </>
   );
