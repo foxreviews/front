@@ -18,6 +18,7 @@ export default function Footer() {
 
         {/* COLUMN 1 – Logo / description */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
+          <h3 className="font-semibold mb-4">À propos de nous</h3>
           <p className="text-sm text-white/80 leading-relaxed">
             Plateforme de mise en relation avec des professionnels qualifiés,
             évalués par de vrais clients.
@@ -37,12 +38,12 @@ export default function Footer() {
 
         {/* COLUMN 3 – Infos + icons */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
-          <h3 className="font-semibold mb-4">Informations</h3>
+          <h3 className="font-semibold mb-4">Adresse & Contacts</h3>
           <div className="mx-auto lg:mx-0">
             <ul className="space-y-3 text-sm text-white/80">
               <li className="flex items-center justify-center lg:justify-start gap-3">
                 <span>📍</span>
-                <span>Madagascar</span>
+                <span>France</span>
               </li>
               <li className="flex items-center justify-center lg:justify-start gap-3">
                 <span>📧</span>
@@ -50,7 +51,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center justify-center lg:justify-start gap-3">
                 <span>📞</span>
-                <span>+261 XX XXX XX</span>
+                <span>+33 XX XXX XX</span>
               </li>
             </ul>
           </div>
@@ -58,22 +59,10 @@ export default function Footer() {
 
         {/* COLUMN 4 – App store */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
-          <h3 className="font-semibold mb-4">Télécharger l’application</h3>
-
-          <a
-            href="#"
-            className="inline-flex items-center gap-3 bg-black rounded-lg px-4 py-3 hover:bg-black/80 transition"
-          >
-            <img
-              src="/assets/google-play.svg"
-              alt="Google Play"
-              className="h-6 w-6"
-            />
-            <div className="text-left leading-tight">
-              <p className="text-xs text-white/70">Disponible sur</p>
-              <p className="text-sm font-semibold">Google Play</p>
-            </div>
-          </a>
+          <h3 className="font-semibold mb-4">Abonnez-vous</h3>
+          <p className="text-sm text-white/80 leading-relaxed">
+            At Vero Eos Et Accusamus Et Iusto Odio Dignissimos Ducimus Qui Blanditiis. Lorem ipsum dolor sit amet, consectetur.
+          </p>
         </div>
 
       </div>
