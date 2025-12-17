@@ -5,15 +5,29 @@ export default function Hero() {
   const navigate = useNavigate();
 
   const handleSearch = (filters: {
-    categorie?: string;
-    sous_categorie?: string;
-    ville?: string;
-  }) => {
-    console.log("Recherche :", filters);
-    // étape suivante : navigation vers /search
-    const params = new URLSearchParams(filters as any).toString();
-    navigate(`/search?${params}`);
-  };
+  categorie?: string;
+  sous_categorie?: string;
+  ville?: string;
+}) => {
+  // 1️⃣ Nettoyage des filtres (supprime undefined / "")
+  const params = new URLSearchParams();
+
+  if (filters.categorie) {
+    params.append("categorie", filters.categorie);
+  }
+
+  if (filters.sous_categorie) {
+    params.append("sous_categorie", filters.sous_categorie);
+  }
+
+  if (filters.ville) {
+    params.append("ville", filters.ville);
+  }
+
+  // 2️⃣ Redirection vers la page de recherche
+  navigate(`/search?${params.toString()}`);
+};
+
 
   return (
     <section className="relative w-full overflow-hidden bg-[url('/assets/hero-bg.webp')] bg-cover bg-center px-6 sm:px-12 lg:px-24">
