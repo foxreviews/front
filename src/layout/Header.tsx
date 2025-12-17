@@ -4,7 +4,7 @@ export default function Header() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="bg-white shadow-md fixed w-full z-50">
+    <header className="bg-transparent shadow-md fixed w-full z-50">
       <div className="mx-auto max-w-7xl px-6 py-4 flex justify-between items-center">
         <div className="text-2xl font-bold text-orange-500">FoxReviews</div>
 
