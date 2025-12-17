@@ -1,4 +1,20 @@
+import { useNavigate } from "react-router-dom";
+import SearchBar from "../../components/search/SearchBar";
+
 export default function Hero() {
+  const navigate = useNavigate();
+
+  const handleSearch = (filters: {
+    categorie?: string;
+    sous_categorie?: string;
+    ville?: string;
+  }) => {
+    console.log("Recherche :", filters);
+    // étape suivante : navigation vers /search
+    const params = new URLSearchParams(filters as any).toString();
+    navigate(`/search?${params}`);
+  };
+
   return (
     <section className="relative w-full overflow-hidden bg-[url('/assets/hero-bg.webp')] bg-cover bg-center px-6 sm:px-12 lg:px-24">
       {/* Background gradient */}
@@ -41,6 +57,9 @@ export default function Hero() {
             <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-base sm:text-lg italic leading-relaxed text-white">
               Misez sur la qualité relationnelle et la compétence…
             </p>
+
+            {/* 🔍 SEARCH BAR */}
+            <SearchBar onSearch={handleSearch} />
 
 
           </div>
