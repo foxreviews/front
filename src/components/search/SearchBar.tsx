@@ -1,53 +1,48 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCategories, useSousCategories, useVilles } from "../../hooks";
 
 interface SearchBarProps {
-  onSearch: (filters: {
+  onSearch?: (filters: {
     categorie?: string;
     sous_categorie?: string;
     ville?: string;
   }) => void;
 }
 
-const CATEGORIES = [
-  { label: "Services informatique", value: "services-informatique" },
-  { label: "Artisans & Travaux", value: "artisans-travaux" },
-  { label: "Auto & Moto", value: "auto-moto" },
-];
-
-const SOUS_CATEGORIES: Record<string, { label: string; value: string }[]> = {
-  "services-informatique": [
-    { label: "Développeur web", value: "developpeur-web" },
-    { label: "Designer", value: "designer" },
-  ],
-  "artisans-travaux": [
-    { label: "Plombier", value: "plombier" },
-    { label: "Maçon", value: "macon" },
-  ],
-  "auto-moto": [
-    { label: "Garagiste", value: "garagiste" },
-    { label: "Mécanicien moto", value: "mecanicien-moto" },
-  ],
-};
-
-const VILLES = [
-  { label: "Paris", value: "paris" },
-  { label: "Antananarivo", value: "antananarivo" },
-  { label: "Toamasina", value: "toamasina" },
-];
-
 export default function SearchBar({ onSearch }: SearchBarProps) {
+  const navigate = useNavigate();
   const [categorie, setCategorie] = useState("");
   const [sousCategorie, setSousCategorie] = useState("");
   const [ville, setVille] = useState("");
 
+  const { categories, loading: loadingCategories } = useCategories();
+  // On stocke dans l'état le slug pour l'URL de recherche,
+  // mais on passe l'UUID (id) au hook de sous-catégories
+  const selectedCategory = (categories || []).find((c) => c.slug === categorie);
+  const { sousCategories, loading: loadingSousCategories } = useSousCategories(selectedCategory?.id);
+  const { villes, loading: loadingVilles } = useVilles();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    onSearch({
+    const filters = {
       categorie: categorie || undefined,
       sous_categorie: sousCategorie || undefined,
       ville: ville || undefined,
-    });
+    };
+
+    if (onSearch) {
+      onSearch(filters);
+    } else {
+      // Navigation vers la page de résultats
+      const params = new URLSearchParams();
+      if (filters.categorie) params.append("categorie", filters.categorie);
+      if (filters.sous_categorie) params.append("sous_categorie", filters.sous_categorie);
+      if (filters.ville) params.append("ville", filters.ville);
+      
+      navigate(`/search?${params.toString()}`);
+    }
   };
 
   return (
@@ -66,6 +61,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         "
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Catégorie */}
           <select
             value={categorie}
             onChange={(e) => {
@@ -85,20 +81,25 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               focus:outline-none
               focus:ring-2
               focus:ring-orange-500
+              disabled:opacity-50
             "
+            disabled={loadingCategories}
           >
-            <option value="">Catégorie</option>
-            {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
+            <option value="">
+              {loadingCategories ? "Chargement..." : "Catégorie"}
+            </option>
+            {(categories || []).map((c) => (
+              <option key={c.id} value={c.slug}>
+                {c.nom}
               </option>
             ))}
           </select>
 
+          {/* Sous-catégorie */}
           <select
             value={sousCategorie}
             onChange={(e) => setSousCategorie(e.target.value)}
-            disabled={!categorie}
+            disabled={!categorie || loadingSousCategories}
             className="
               w-full
               px-3 py-2
@@ -115,17 +116,19 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               focus:ring-orange-500
             "
           >
-            <option value="">Sous-catégorie</option>
-            {categorie &&
-              SOUS_CATEGORIES[categorie]?.map((sc) => (
-                <option key={sc.value} value={sc.value}>
-                  {sc.label}
-                </option>
-              ))}
+            <option value="">
+              {loadingSousCategories ? "Chargement..." : "Sous-catégorie"}
+            </option>
+            {(sousCategories || []).map((sc) => (
+              <option key={sc.id} value={sc.slug}>
+                {sc.nom}
+              </option>
+            ))}
           </select>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Ville */}
           <select
             value={ville}
             onChange={(e) => setVille(e.target.value)}
@@ -142,12 +145,16 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               focus:outline-none
               focus:ring-2
               focus:ring-orange-500
+              disabled:opacity-50
             "
+            disabled={loadingVilles}
           >
-            <option value="">Ville</option>
-            {VILLES.map((v) => (
-              <option key={v.value} value={v.value}>
-                {v.label}
+            <option value="">
+              {loadingVilles ? "Chargement..." : "Ville"}
+            </option>
+            {(villes || []).map((v) => (
+              <option key={v.id} value={v.slug}>
+                {v.nom}
               </option>
             ))}
           </select>

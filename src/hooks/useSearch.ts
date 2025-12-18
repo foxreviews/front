@@ -1,21 +1,46 @@
-import { useEffect, useState } from "react";
-import { searchEnterprises } from "../api/search";
+import { useEffect, useState, useCallback } from "react";
+import { searchService } from "../services/search.service";
 import type { SearchFilters, SearchResponse } from "../types/search";
 
-export function useSearch(filters: SearchFilters) {
+interface UseSearchReturn {
+  data: SearchResponse | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Hook pour la recherche d'entreprises
+ * Gère l'état, le chargement et les erreurs automatiquement
+ */
+export function useSearch(filters: SearchFilters): UseSearchReturn {
   const [data, setData] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
-    searchEnterprises(filters)
-      .then(setData)
-      .catch(() => setError("Impossible de charger les résultats"))
-      .finally(() => setLoading(false));
+    try {
+      const result = await searchService.search(filters);
+      setData(result);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Impossible de charger les résultats";
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   }, [JSON.stringify(filters)]);
 
-  return { data, loading, error };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { 
+    data, 
+    loading, 
+    error,
+    refetch: fetchData 
+  };
 }
