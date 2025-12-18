@@ -1,7 +1,6 @@
-import { Clock, FileText, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, FileText, Mail} from "lucide-react";
 
 export default function Footer() {
-
   const iconClass = "w-4 h-4";
 
   return (
@@ -20,8 +19,7 @@ export default function Footer() {
             lg:text-left
       ">
 
-
-        {/* COLUMN 1 – Logo / description */}
+        {/* COLUMN 1 – Contact */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
           <h3 className="font-semibold mb-4">Contact</h3>
           <ul>
@@ -31,7 +29,7 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-2 mb-5 text-white/80">
               <Mail className={iconClass} />
-             <a href="mailto:contact@foxreviews.com">contact@foxreviews.com</a>
+              <a href="mailto:contact@foxreviews.com">contact@foxreviews.com</a>
             </li>
             <li className="flex items-center gap-2 mb-5 text-white/80">
               <FileText className={iconClass} />
@@ -52,32 +50,50 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* COLUMN 3 – Infos + icons */}
-        <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
-          <h3 className="font-semibold mb-4">Adresse & Contacts</h3>
-          <div className="mx-auto lg:mx-0">
-            <ul className="space-y-3 text-sm text-white/80">
-              <li className="flex items-center justify-center lg:justify-start gap-3">
-                <MapPin className={iconClass} />
-                <span>France</span>
-              </li>
-              <li className="flex items-center justify-center lg:justify-start gap-3">
-                <Phone className={iconClass} />
-                <span>+33 XX XXX XX</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* COLUMN 4 – App store */}
+        {/* COLUMN 3 – Abonnez-vous */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
           <h3 className="font-semibold mb-4">Abonnez-vous</h3>
           <p className="text-sm text-white/80 leading-relaxed">
             Abonnez-vous pour suivre les dernières analyses, retours d’expérience et évaluations
-            sur nos services et plateformes en ligne. 
+            sur nos services et plateformes en ligne.
           </p>
         </div>
 
+        {/* COLUMN 4 – Sponsoring & Feedback */}
+        <div className="space-y-6 mx-auto lg:mx-0 max-w-xs">
+
+          {/* Feedback Form */}
+          <form className="space-y-3 text-sm">
+            <h3 className="font-semibold mb-2">Envoyez-nous un message</h3>
+            <input
+              type="text"
+              placeholder="Nom"
+              className="w-full px-3 py-2 rounded bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full px-3 py-2 rounded bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Numéro (optionnel)"
+              className="w-full px-3 py-2 rounded bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <textarea
+              placeholder="Message"
+              className="w-full px-3 py-2 rounded bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              rows={3}
+            />
+            <button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 transition-colors rounded py-2 font-semibold"
+            >
+              Envoyer
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Bottom bar */}
@@ -85,5 +101,5 @@ export default function Footer() {
         © {new Date().getFullYear()} Fox Reviews — Tous droits réservés
       </div>
     </footer>
-  )
+  );
 }
