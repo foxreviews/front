@@ -55,16 +55,37 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       onSubmit={handleSubmit}
       className="mt-8 w-full max-w-2xl mx-auto lg:mx-0"
     >
-      <div className="bg-white rounded-xl p-4 shadow-lg space-y-3">
-
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div
+        className="
+          bg-white
+          dark:bg-white
+          rounded-xl
+          shadow-lg
+          p-4
+          space-y-3
+        "
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <select
             value={categorie}
             onChange={(e) => {
               setCategorie(e.target.value);
               setSousCategorie("");
             }}
-            className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="
+              w-full
+              px-3 py-2
+              rounded-lg
+              border
+              text-sm
+              bg-white
+              text-gray-800
+              dark:bg-white
+              dark:text-gray-800
+              focus:outline-none
+              focus:ring-2
+              focus:ring-orange-500
+            "
           >
             <option value="">Catégorie</option>
             {CATEGORIES.map((c) => (
@@ -78,7 +99,21 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             value={sousCategorie}
             onChange={(e) => setSousCategorie(e.target.value)}
             disabled={!categorie}
-            className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100"
+            className="
+              w-full
+              px-3 py-2
+              rounded-lg
+              border
+              text-sm
+              bg-white
+              text-gray-800
+              dark:bg-white
+              dark:text-gray-800
+              disabled:bg-gray-100
+              focus:outline-none
+              focus:ring-2
+              focus:ring-orange-500
+            "
           >
             <option value="">Sous-catégorie</option>
             {categorie &&
@@ -90,11 +125,24 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </select>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <select
             value={ville}
             onChange={(e) => setVille(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="
+              w-full
+              px-3 py-2
+              rounded-lg
+              border
+              text-sm
+              bg-white
+              text-gray-800
+              dark:bg-white
+              dark:text-gray-800
+              focus:outline-none
+              focus:ring-2
+              focus:ring-orange-500
+            "
           >
             <option value="">Ville</option>
             {VILLES.map((v) => (
@@ -107,13 +155,18 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           <button
             type="submit"
             className="
-          flex items-center justify-center gap-2
-          bg-orange-500 hover:bg-orange-600
-          text-white font-semibold
-          px-6 py-2
-          rounded-lg text-sm
-          whitespace-nowrap
-        "
+              flex items-center justify-center
+              gap-2
+              bg-orange-500
+              hover:bg-orange-600
+              text-white
+              font-semibold
+              px-5
+              py-2
+              rounded-lg
+              text-sm
+              transition
+            "
           >
             <svg
               className="w-4 h-4"
@@ -131,7 +184,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             Rechercher
           </button>
         </div>
-
       </div>
     </form>
   );

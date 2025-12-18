@@ -6,14 +6,14 @@ export default function PopularCategories() {
 
       <div className="relative z-20 max-w-7xl mx-auto text-center">
         <h2 className="mt-6 text-center text-3xl sm:text-4xl lg:text-5xl xl:text-4xl font-bold tracking-tight text-white">
-          Most Popular{" "}
-          <span className="text-orange-500">Categories</span>
+          <span className="text-orange-500">Catégories </span>
+          les plus populaires
         </h2>
 
         <p className="mt-6 max-w-3xl mx-auto text-center text-white px-4 sm:px-0">
-          At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
-          praesentium voluptatum deleniti atque corrupti quos dolores et quas
-          molestias excepturi
+          Parcourez les catégories les plus recherchées par les utilisateurs et accédez
+          rapidement aux professionnels les mieux notés dans chaque domaine, partout
+          près de chez vous.
         </p>
       </div>
     </section>
