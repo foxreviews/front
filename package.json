@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prod:build": "npm run build",
+    "prod:start": "pm2 start ecosystem.config.cjs",
+    "prod:stop": "pm2 stop fox-reviews-front",
+    "prod:restart": "pm2 restart fox-reviews-front",
+    "prod:logs": "pm2 logs fox-reviews-front",
+    "prod:status": "pm2 status",
+    "prod:delete": "pm2 delete fox-reviews-front"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -27,6 +34,8 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "pm2": "^6.0.14",
+    "serve": "^14.2.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"

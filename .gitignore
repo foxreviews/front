@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 
+# PM2
+.pm2/
+
 # Local env files
 .env
 .env.*
