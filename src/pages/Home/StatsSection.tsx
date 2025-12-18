@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Trophy, Layers, Smile, Coffee } from "lucide-react";
 import StatCard from "./StatCard";
 
 export default function StatsSection() {
@@ -10,10 +11,10 @@ export default function StatsSection() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setStartCount(true);
-          observer.disconnect(); 
+          observer.disconnect();
         }
       },
-      { threshold: 0.3 } 
+      { threshold: 0.3 }
     );
 
     if (sectionRef.current) {
@@ -22,6 +23,8 @@ export default function StatsSection() {
 
     return () => observer.disconnect();
   }, []);
+
+  const iconClass = "w-7 h-7"; 
 
   return (
     <section
@@ -32,10 +35,33 @@ export default function StatsSection() {
 
       <div className="relative z-20 max-w-7xl mx-auto text-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          <StatCard icon="🏆" end={500} label="Professionnels" start={startCount} />
-          <StatCard icon="⭐" end={1200} label="Avis clients" start={startCount} />
-          <StatCard icon="📍" end={50} label="Villes couvertes" start={startCount} />
-          <StatCard icon="💼" end={150} label="Projets réalisés" start={startCount} />
+          <StatCard
+            icon={<Trophy className={iconClass} />}
+            end={500}
+            label="Professionnels"
+            start={startCount}
+          />
+
+          <StatCard
+            icon={<Layers className={iconClass} />}
+            end={1200}
+            label="Stacks traités"
+            start={startCount}
+          />
+
+          <StatCard
+            icon={<Smile className={iconClass} />}
+            end={50}
+            label="Clients satisfaits"
+            start={startCount}
+          />
+
+          <StatCard
+            icon={<Coffee className={iconClass} />}
+            end={150}
+            label="Pauses café"
+            start={startCount}
+          />
         </div>
       </div>
     </section>

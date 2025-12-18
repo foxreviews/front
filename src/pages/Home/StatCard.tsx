@@ -43,7 +43,7 @@ function StatCard({
       </div>
 
       <div className="text-4xl sm:text-5xl text-white">
-        {count}
+        {count}{" +"}
       </div>
 
       <div className="mt-2 text-base sm:text-lg font-medium text-white">
