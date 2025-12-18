@@ -2,19 +2,16 @@ export default function Testimonials() {
   return (
     <section
       className="
-        relative
-        w-full
-        py-24
-        bg-[url('/assets/testimonial.png')]
-        bg-cover
-        bg-center
-      "
+    relative
+    w-full
+    py-24
+    bg-[url('/assets/testimonial.png')]
+    bg-cover
+    bg-center
+    bg-white
+  "
     >
-      {/* Overlay clair */}
-      <div className="absolute inset-0 bg-white/90" />
-
-      {/* Contenu */}
-      <div className="relative z-10 px-6 sm:px-12 lg:px-24">
+      <div className="z-10 px-6 sm:px-12 lg:px-24">
         <h2
           className="
             text-center
