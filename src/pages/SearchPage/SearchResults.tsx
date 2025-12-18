@@ -1,6 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useSearch } from "../../hooks";
 import SearchBar from "../../components/search/SearchBar";
+import SkeletonCard from "../../components/skeleton/Skeleton";
 
 export default function SearchResults() {
   const [params] = useSearchParams();
@@ -25,6 +26,28 @@ export default function SearchResults() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleSearch = (filters: {
+  categorie?: string;
+  sous_categorie?: string;
+  ville?: string;
+}) => {
+  const params = new URLSearchParams();
+
+  if (filters.categorie) {
+    params.append("categorie", filters.categorie);
+  }
+
+  if (filters.sous_categorie) {
+    params.append("sous_categorie", filters.sous_categorie);
+  }
+
+  if (filters.ville) {
+    params.append("ville", filters.ville);
+  }
+
+  navigate(`/search?${params.toString()}`);
+};
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section with Search */}
@@ -36,7 +59,7 @@ export default function SearchResults() {
           <p className="text-gray-200 mb-6">
             Recherchez parmi des milliers d'entreprises vérifiées
           </p>
-          <SearchBar />
+          <SearchBar onSearch={handleSearch}/>
         </div>
       </div>
 
@@ -63,13 +86,15 @@ export default function SearchResults() {
           </div>
         )}
 
-        {/* Loading State */}
+        {/* Loading Skeleton */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mb-4"></div>
-            <p className="text-gray-600 text-lg">Recherche en cours...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-12">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i} type="card" />
+            ))}
           </div>
         )}
+
 
         {/* Error State */}
         {error && (
@@ -191,11 +216,10 @@ export default function SearchResults() {
                               {[...Array(5)].map((_, i) => (
                                 <svg
                                   key={i}
-                                  className={`w-5 h-5 ${
-                                    i < Math.floor(item.note_moyenne)
+                                  className={`w-5 h-5 ${i < Math.floor(item.note_moyenne)
                                       ? "text-orange-500"
                                       : "text-gray-300"
-                                  }`}
+                                    }`}
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -248,11 +272,10 @@ export default function SearchResults() {
                       <button
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
-                        className={`px-4 py-2 rounded-lg transition ${
-                          page === pageNum
+                        className={`px-4 py-2 rounded-lg transition ${page === pageNum
                             ? "bg-orange-500 text-white font-semibold"
                             : "border border-gray-300 hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>
