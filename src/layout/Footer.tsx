@@ -88,7 +88,7 @@ export default function Footer() {
             />
             <button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 transition-colors rounded py-2 font-semibold"
+              className="w-full bg-orange-500 hover:bg-orange-600 transition-colors rounded py-2 font-semibold cursor-pointer"
             >
               Envoyer
             </button>
