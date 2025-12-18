@@ -6,6 +6,7 @@ interface StatCardProps {
   label: string;
   duration?: number;
   start: boolean; 
+  color?: string; // nouvelle prop
 }
 
 function StatCard({
@@ -14,12 +15,12 @@ function StatCard({
   label,
   duration = 800,
   start,
+  color = "text-white", // valeur par défaut
 }: StatCardProps) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (!start) return; 
-
     let current = 0;
     const stepTime = 30;
     const increment = Math.ceil(end / (duration / stepTime));
@@ -42,11 +43,11 @@ function StatCard({
         {icon}
       </div>
 
-      <div className="text-4xl sm:text-5xl text-white">
+      <div className={`text-4xl sm:text-5xl ${color}`}>
         {count}{" +"}
       </div>
 
-      <div className="mt-2 text-base sm:text-lg font-medium text-white">
+      <div className={`mt-2 text-base sm:text-lg font-medium ${color}`}>
         {label}
       </div>
     </div>

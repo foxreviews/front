@@ -79,11 +79,46 @@ class SearchService {
 
   /**
    * Détails d'une pro-localisation (entreprise dans un contexte ville + sous-catégorie)
+   * Normalise la réponse riche de l'API (entreprise, sous_categorie, ville)
    */
   async getProLocalisation(id: string): Promise<ProLocalisation> {
     try {
-      const { data } = await apiClient.get<ProLocalisation>(`/pro-localisations/${id}/`);
-      return data;
+      const { data } = await apiClient.get<any>(`/pro-localisations/${id}/`);
+
+      const entreprise = data.entreprise ?? null;
+      const sousCat = data.sous_categorie ?? null;
+      const ville = data.ville ?? null;
+
+      const normalized: ProLocalisation = {
+        id: data.id,
+        // Libellés principaux
+        entreprise_nom:
+          data.entreprise_nom || entreprise?.nom_commercial || entreprise?.nom || "",
+        sous_categorie_nom: data.sous_categorie_nom || sousCat?.nom,
+        ville_nom: data.ville_nom || ville?.nom,
+        // Champs "nouveau format" utilisés ailleurs
+        nom: entreprise?.nom || data.entreprise_nom || "",
+        slug: data.slug,
+        categorie: sousCat?.categorie_nom ?? data.categorie,
+        sous_categorie: sousCat?.nom ?? data.sous_categorie,
+        avis_redaction: data.avis_redaction,
+        is_sponsored: data.is_sponsored,
+        // Détails enrichis
+        entreprise: entreprise || undefined,
+        sous_categorie_detail: sousCat || undefined,
+        ville_detail: ville || undefined,
+        zone_description: data.zone_description,
+        is_active: data.is_active,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        // Scores
+        note_moyenne: data.note_moyenne ?? 0,
+        nb_avis: data.nb_avis ?? 0,
+        score_global: data.score_global ?? 0,
+        is_verified: data.is_verified ?? false,
+      };
+
+      return normalized;
     } catch (error) {
       console.error("Erreur lors du chargement des détails de l'entreprise:", error);
       throw new Error("Impossible de charger les détails de l'entreprise");

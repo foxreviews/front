@@ -19,12 +19,14 @@ export default function SearchResults() {
     page,
   });
 
-  const handlePageChange = (newPage: number) => {
-    const newParams = new URLSearchParams(params);
-    newParams.set("page", String(newPage));
-    navigate(`/search?${newParams.toString()}`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const MAX_RESULTS = 15;
+
+  const sponsoredResults = data?.sponsored ?? [];
+  const organicResults = data?.organic ?? [];
+  const sponsoredToShow = sponsoredResults.slice(0, MAX_RESULTS);
+  const remainingSlots = MAX_RESULTS - sponsoredToShow.length;
+  const organicToShow = remainingSlots > 0 ? organicResults.slice(0, remainingSlots) : [];
+  const displayedCount = sponsoredToShow.length + organicToShow.length;
 
   const handleSearch = (filters: {
   categorie?: string;
@@ -113,9 +115,9 @@ export default function SearchResults() {
             {/* Results Count */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-[#26354e]">
-                {data.total > 0 ? (
+                {displayedCount > 0 ? (
                   <>
-                    <span className="text-orange-500">{data.total}</span> résultat{data.total > 1 ? "s" : ""} trouvé{data.total > 1 ? "s" : ""}
+                    <span className="text-orange-500">{displayedCount}</span> résultat{displayedCount > 1 ? "s" : ""} trouvé{displayedCount > 1 ? "s" : ""}
                   </>
                 ) : (
                   "Aucun résultat"
@@ -124,14 +126,14 @@ export default function SearchResults() {
             </div>
 
             {/* Sponsored Results */}
-            {data.sponsored && data.sponsored.length > 0 && (
+            {sponsoredToShow.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sponsorisé</span>
                   <div className="h-px flex-1 bg-gray-200"></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data.sponsored.map((item) => (
+                  {sponsoredToShow.map((item) => (
                     <article
                       key={item.id}
                       className="bg-gradient-to-br from-orange-50 to-white border-2 border-orange-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
@@ -180,9 +182,9 @@ export default function SearchResults() {
             )}
 
             {/* Organic Results */}
-            {data.organic && data.organic.length > 0 ? (
+            {organicToShow.length > 0 ? (
               <div className="space-y-4">
-                {data.organic.map((item) => (
+                {organicToShow.map((item) => (
                   <article
                     key={item.id}
                     className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-orange-300 transition-all duration-300"
@@ -244,7 +246,7 @@ export default function SearchResults() {
                 ))}
               </div>
             ) : (
-              !loading && data.sponsored.length === 0 && (
+              !loading && sponsoredToShow.length === 0 && organicToShow.length === 0 && (
                 <div className="text-center py-20">
                   <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -253,43 +255,6 @@ export default function SearchResults() {
                   <p className="text-gray-500">Essayez de modifier vos critères de recherche</p>
                 </div>
               )
-            )}
-
-            {/* Pagination */}
-            {data.total > data.page_size && (
-              <div className="mt-12 flex justify-center items-center gap-2">
-                <button
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                  className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
-                >
-                  Précédent
-                </button>
-                <div className="flex gap-2">
-                  {[...Array(Math.ceil(data.total / data.page_size))].slice(0, 5).map((_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`px-4 py-2 rounded-lg transition ${page === pageNum
-                            ? "bg-orange-500 text-white font-semibold"
-                            : "border border-gray-300 hover:bg-gray-50"
-                          }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={!data.has_next}
-                  className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
-                >
-                  Suivant
-                </button>
-              </div>
             )}
           </>
         )}

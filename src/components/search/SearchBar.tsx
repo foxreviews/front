@@ -173,6 +173,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               rounded-lg
               text-sm
               transition
+              cursor-pointer
             "
           >
             <svg
