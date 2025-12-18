@@ -1,4 +1,9 @@
+import { Clock, FileText, Mail, MapPin, Phone } from "lucide-react";
+
 export default function Footer() {
+
+  const iconClass = "w-4 h-4";
+
   return (
     <footer className="bg-[#242F3E] text-white">
       {/* Main footer */}
@@ -18,11 +23,21 @@ export default function Footer() {
 
         {/* COLUMN 1 – Logo / description */}
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
-          <h3 className="font-semibold mb-4">À propos de nous</h3>
-          <p className="text-sm text-white/80 leading-relaxed">
-            Plateforme de mise en relation avec des professionnels qualifiés,
-            évalués par de vrais clients.
-          </p>
+          <h3 className="font-semibold mb-4">Contact</h3>
+          <ul>
+            <li className="flex items-center gap-2 mb-5 text-white/80">
+              <Clock className={iconClass} />
+              <span>9h - 18h, Lundi - Vendredi</span>
+            </li>
+            <li className="flex items-center gap-2 mb-5 text-white/80">
+              <Mail className={iconClass} />
+             <a href="mailto:contact@foxreviews.com">contact@foxreviews.com</a>
+            </li>
+            <li className="flex items-center gap-2 mb-5 text-white/80">
+              <FileText className={iconClass} />
+              <a href="#contact">Formulaire de contact</a>
+            </li>
+          </ul>
         </div>
 
         {/* COLUMN 2 – Navigation */}
@@ -31,8 +46,9 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-white/80">
             <li className="hover:text-orange-500 cursor-pointer">Accueil</li>
             <li className="hover:text-orange-500 cursor-pointer">Catégories</li>
-            <li className="hover:text-orange-500 cursor-pointer">Professionnels</li>
+            <li className="hover:text-orange-500 cursor-pointer">Villes</li>
             <li className="hover:text-orange-500 cursor-pointer">Contact</li>
+            <li className="hover:text-orange-500 cursor-pointer">À Propos</li>
           </ul>
         </div>
 
@@ -42,15 +58,11 @@ export default function Footer() {
           <div className="mx-auto lg:mx-0">
             <ul className="space-y-3 text-sm text-white/80">
               <li className="flex items-center justify-center lg:justify-start gap-3">
-                <span>📍</span>
+                <MapPin className={iconClass} />
                 <span>France</span>
               </li>
               <li className="flex items-center justify-center lg:justify-start gap-3">
-                <span>📧</span>
-                <span>contact@foxreviews.com</span>
-              </li>
-              <li className="flex items-center justify-center lg:justify-start gap-3">
-                <span>📞</span>
+                <Phone className={iconClass} />
                 <span>+33 XX XXX XX</span>
               </li>
             </ul>
@@ -61,7 +73,8 @@ export default function Footer() {
         <div className="space-y-4 mx-auto lg:mx-0 max-w-xs">
           <h3 className="font-semibold mb-4">Abonnez-vous</h3>
           <p className="text-sm text-white/80 leading-relaxed">
-            At Vero Eos Et Accusamus Et Iusto Odio Dignissimos Ducimus Qui Blanditiis. Lorem ipsum dolor sit amet, consectetur.
+            Abonnez-vous pour suivre les dernières analyses, retours d’expérience et évaluations
+            sur nos services et plateformes en ligne. 
           </p>
         </div>
 
