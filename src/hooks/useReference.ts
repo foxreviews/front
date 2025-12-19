@@ -12,7 +12,7 @@ export function useCategories() {
 
   useEffect(() => {
     referenceService
-      .getCategories()
+      .getAllCategories()
       .then(setCategories)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -40,7 +40,7 @@ export function useSousCategories(categorieId?: string) {
     setError(null);
 
     referenceService
-      .getSousCategories(categorieId)
+      .getAllSousCategories(categorieId)
       .then(setSousCategories)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -62,7 +62,7 @@ export function useVilles(search?: string) {
     setError(null);
 
     referenceService
-      .getVilles(search)
+      .getAllVillesInMemory(search)
       .then(setVilles)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -86,9 +86,9 @@ export function useReference() {
     setError(null);
 
     Promise.all([
-      referenceService.getCategories(),
-      referenceService.getSousCategories(),
-      referenceService.getVilles()
+      referenceService.getAllCategories(),
+      referenceService.getAllSousCategories(),
+      referenceService.getAllVillesInMemory()
     ])
       .then(([cats, sousCats, vills]) => {
         setCategories(cats);

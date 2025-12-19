@@ -1,20 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useReference } from '../../hooks';
+import { referenceService } from '../../services/reference.service';
 import type { Categorie } from '../../types/reference';
 import './Categories.css';
 
 export function Categories() {
   const navigate = useNavigate();
-  const { categories, loading, error } = useReference();
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
 
-  // Pagination
-  const totalPages = Math.ceil(categories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentCategories = categories.slice(startIndex, endIndex);
+  // Fetch categories with server-side pagination
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await referenceService.getCategories(currentPage, pageSize);
+      setCategories(data.results);
+      setTotalCount(data.count);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, pageSize]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -26,6 +43,50 @@ export function Categories() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | null)[] = [];
+    const maxVisible = 7;
+
+    if (totalPages <= maxVisible) {
+      // Show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first, last, and around current
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push(null); // Ellipsis
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push(null); // Ellipsis
+      }
+
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
   };
 
   if (loading) {
@@ -50,8 +111,9 @@ export function Categories() {
               clipRule="evenodd"
             />
           </svg>
-          <h2>Erreur de chargement</h2>
-          <p>{error}</p>
+          <button onClick={fetchCategories} className="btn-primary" style={{ marginTop: '16px' }}>
+            Réessayer
+          </button>
         </div>
       </div>
     );
@@ -63,13 +125,44 @@ export function Categories() {
       <div className="categories-header">
         <h1 className="page-title">Toutes les catégories</h1>
         <p className="page-subtitle">
-          Parcourez nos {categories.length} catégories pour trouver les meilleurs professionnels
+          {totalCount} catégorie{totalCount > 1 ? 's' : ''} disponible{totalCount > 1 ? 's' : ''}
         </p>
+        
+        {/* Page Size Selector */}
+        <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label htmlFor="pageSize" style={{ fontSize: '14px', fontWeight: '500' }}>
+            Afficher par page:
+          </label>
+          <select
+            id="pageSize"
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e5e7eb',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={200}>200</option>
+            <option value={500}>500</option>
+          </select>
+        </div>
       </div>
 
       {/* Grid des catégories */}
-      <div className="categories-grid">
-        {currentCategories.map((category) => (
+      {!categories || categories.length === 0 ? (
+        <div className="empty-state">
+          <p>Aucune catégorie disponible</p>
+        </div>
+      ) : (
+        <div className="categories-grid">
+          {categories.map((category) => (
           <div
             key={category.id}
             onClick={() => handleCategoryClick(category)}
@@ -102,6 +195,7 @@ export function Categories() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -123,15 +217,21 @@ export function Categories() {
           </button>
 
           <div className="pagination-numbers">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-              >
-                {page}
-              </button>
-            ))}
+            {getPageNumbers().map((page, index) =>
+              page === null ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                >
+                  {page}
+                </button>
+              )
+            )}
           </div>
 
           <button

@@ -1,0 +1,130 @@
+.autocomplete-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-input-field {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.autocomplete-input-field:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.autocomplete-input-field:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.autocomplete-loading {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.autocomplete-error {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  color: #c33;
+  font-size: 0.875rem;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.autocomplete-dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.15s ease;
+}
+
+.autocomplete-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-dropdown-item:hover,
+.autocomplete-dropdown-item.focused {
+  background-color: #f8f9fa;
+}
+
+.autocomplete-dropdown-item.focused {
+  background-color: #e3f2fd;
+}
+
+.autocomplete-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+}
+
+/* Scroll personnalisé pour la dropdown */
+.autocomplete-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 6px 6px 0;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

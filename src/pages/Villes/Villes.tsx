@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { referenceService } from '../../services/reference.service';
 import type { Ville } from '../../types/reference';
@@ -6,52 +6,49 @@ import './Villes.css';
 
 export function Villes() {
   const navigate = useNavigate();
-  const [allVilles, setAllVilles] = useState<Ville[]>([]);
+  const [villes, setVilles] = useState<Ville[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const itemsPerPage = 20;
+  const [searchDebounce, setSearchDebounce] = useState('');
+  const [pageSize, setPageSize] = useState(20);
 
-  // Fetch villes on mount
+  // Debounce search
   useEffect(() => {
-    const fetchVilles = async () => {
-      setLoading(true);
-      setError(null);
+    const timer = setTimeout(() => {
+      setSearchDebounce(searchTerm);
+      setCurrentPage(1); // Reset to first page on search
+    }, 300);
 
-      try {
-        const data = await referenceService.getVilles();
-        setAllVilles(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVilles();
-  }, []);
-
-  // Filter villes by search
-  const filteredVilles = searchTerm
-    ? allVilles.filter((ville) =>
-        ville.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ville.code_postal_principal?.includes(searchTerm) ||
-        ville.codes_postaux?.some(cp => cp.includes(searchTerm))
-      )
-    : allVilles;
-
-  // Pagination
-  const totalPages = Math.ceil(filteredVilles.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVilles = filteredVilles.slice(startIndex, endIndex);
-
-  // Reset to page 1 when search changes
-  useEffect(() => {
-    setCurrentPage(1);
+    return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Fetch villes with server-side pagination
+  const fetchVilles = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await referenceService.getVilles(
+        searchDebounce || undefined,
+        currentPage,
+        pageSize
+      );
+
+      setVilles(data.results);
+      setTotalCount(data.count);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, searchDebounce, pageSize]);
+
+  useEffect(() => {
+    fetchVilles();
+  }, [fetchVilles]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -64,6 +61,13 @@ export function Villes() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   // Generate page numbers to display
   const getPageNumbers = () => {
@@ -126,6 +130,9 @@ export function Villes() {
           </svg>
           <h2>Erreur de chargement</h2>
           <p>{error}</p>
+          <button onClick={fetchVilles} className="btn-primary" style={{ marginTop: '16px' }}>
+            Réessayer
+          </button>
         </div>
       </div>
     );
@@ -137,8 +144,34 @@ export function Villes() {
       <div className="villes-header">
         <h1 className="page-title">Toutes les villes</h1>
         <p className="page-subtitle">
-          {filteredVilles.length} ville{filteredVilles.length > 1 ? 's' : ''} {searchTerm && `trouvée${filteredVilles.length > 1 ? 's' : ''}`}
+          {totalCount} ville{totalCount > 1 ? 's' : ''} disponible{totalCount > 1 ? 's' : ''}
         </p>
+
+        {/* Page Size Selector */}
+        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label htmlFor="pageSize" style={{ fontSize: '14px', fontWeight: '500' }}>
+            Afficher par page:
+          </label>
+          <select
+            id="pageSize"
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e5e7eb',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={200}>200</option>
+            <option value={500}>500</option>
+          </select>
+        </div>
 
         {/* Search Bar */}
         <div className="search-box">
@@ -172,7 +205,7 @@ export function Villes() {
         </div>
       </div>
 
-      {currentVilles.length === 0 ? (
+      {villes.length === 0 ? (
         <div className="empty-state">
           <svg className="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -194,7 +227,7 @@ export function Villes() {
         <>
           {/* Grid des villes */}
           <div className="villes-grid">
-            {currentVilles.map((ville) => (
+            {villes.map((ville) => (
               <div
                 key={ville.id}
                 onClick={() => handleVilleClick(ville)}

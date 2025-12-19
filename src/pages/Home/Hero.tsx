@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import SearchBar from "../../components/search/SearchBar";
+import HeroSearchBar from "../../components/search/HeroSearchBar";
 
 export default function Hero() {
   const navigate = useNavigate();
@@ -72,8 +72,8 @@ export default function Hero() {
               Misez sur la qualité relationnelle et la compétence…
             </p>
 
-            {/* 🔍 SEARCH BAR */}
-            <SearchBar onSearch={handleSearch} />
+            {/* 🔍 SEARCH BAR WITH VILLE AUTOCOMPLETE */}
+            <HeroSearchBar onSearch={handleSearch} />
 
 
           </div>

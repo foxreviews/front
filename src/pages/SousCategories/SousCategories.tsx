@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useReference } from '../../hooks';
-import type { SousCategorie } from '../../types/reference';
+import { referenceService } from '../../services/reference.service';
+import type { SousCategorie, Categorie } from '../../types/reference';
 import './SousCategories.css';
 
 export function SousCategories() {
@@ -9,24 +9,61 @@ export function SousCategories() {
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get('categorie');
 
-  const { sousCategories, categories, loading, error } = useReference();
+  const [sousCategories, setSousCategories] = useState<SousCategorie[]>([]);
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
 
-  // Filtrer par catégorie si spécifié
-  const filteredSousCategories = categoryFilter
-    ? sousCategories.filter((sc) => sc.categorie_slug === categoryFilter)
-    : sousCategories;
-
-  // Pagination
-  const totalPages = Math.ceil(filteredSousCategories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentSousCategories = filteredSousCategories.slice(startIndex, endIndex);
+  // Trouve l'UUID de la catégorie si un filtre est appliqué
+  const categoryId = categoryFilter
+    ? categories.find((c) => c.slug === categoryFilter)?.id
+    : undefined;
 
   const categoryName = categoryFilter
     ? categories.find((c) => c.slug === categoryFilter)?.nom
     : null;
+
+  // Fetch categories d'abord pour avoir l'UUID
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const allCats = await referenceService.getAllCategories();
+        setCategories(allCats);
+      } catch (err) {
+        console.error('Erreur chargement catégories:', err);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Fetch sous-categories avec pagination serveur
+  const fetchSousCategories = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await referenceService.getSousCategories(
+        categoryId,
+        currentPage,
+        pageSize
+      );
+      setSousCategories(data.results);
+      setTotalCount(data.count);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, categoryId, pageSize]);
+
+  useEffect(() => {
+    if (categories.length > 0 || !categoryFilter) {
+      fetchSousCategories();
+    }
+  }, [fetchSousCategories, categories.length, categoryFilter]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -38,6 +75,50 @@ export function SousCategories() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | null)[] = [];
+    const maxVisible = 7;
+
+    if (totalPages <= maxVisible) {
+      // Show all pages
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show first, last, and around current
+      pages.push(1);
+
+      if (currentPage > 3) {
+        pages.push(null); // Ellipsis
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push(null); // Ellipsis
+      }
+
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
   };
 
   const clearFilter = () => {
@@ -82,8 +163,35 @@ export function SousCategories() {
           {categoryName ? `Sous-catégories - ${categoryName}` : 'Toutes les sous-catégories'}
         </h1>
         <p className="page-subtitle">
-          {filteredSousCategories.length} sous-catégorie{filteredSousCategories.length > 1 ? 's' : ''} disponible{filteredSousCategories.length > 1 ? 's' : ''}
+          {totalCount} sous-catégorie{totalCount > 1 ? 's' : ''} disponible{totalCount > 1 ? 's' : ''}
         </p>
+        
+        {/* Page Size Selector */}
+        <div style={{ marginTop: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label htmlFor="pageSize" style={{ fontSize: '14px', fontWeight: '500' }}>
+            Afficher par page:
+          </label>
+          <select
+            id="pageSize"
+            value={pageSize}
+            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e5e7eb',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={200}>200</option>
+            <option value={500}>500</option>
+          </select>
+        </div>
+        
         {categoryFilter && (
           <button onClick={clearFilter} className="filter-clear-btn">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,7 +207,7 @@ export function SousCategories() {
         )}
       </div>
 
-      {filteredSousCategories.length === 0 ? (
+      {sousCategories.length === 0 ? (
         <div className="empty-state">
           <svg className="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -115,7 +223,7 @@ export function SousCategories() {
         <>
           {/* Grid des sous-catégories */}
           <div className="sous-categories-grid">
-            {currentSousCategories.map((sousCategorie) => (
+            {sousCategories.map((sousCategorie) => (
               <div
                 key={sousCategorie.id}
                 onClick={() => handleSousCategorieClick(sousCategorie)}
@@ -171,15 +279,21 @@ export function SousCategories() {
               </button>
 
               <div className="pagination-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                  >
-                    {page}
-                  </button>
-                ))}
+                {getPageNumbers().map((page, index) =>
+                  page === null ? (
+                    <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`pagination-number ${currentPage === page ? 'active' : ''}`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
               </div>
 
               <button
