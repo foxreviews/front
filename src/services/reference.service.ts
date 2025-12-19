@@ -69,9 +69,40 @@ class ReferenceService {
     }
 
     try {
+      const params: Record<string, any> = {};
+      
+      if (search) {
+        params.search = search;
+      }
+
+      const { data } = await apiClient.get<Ville[]>("/villes/", {
+        params
+      });
+
+      if (!search) {
+        this.villesCache = data;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Erreur lors du chargement des villes:", error);
+      throw new Error("Impossible de charger les villes");
+    }
+  }
+
+  /**
+   * Récupère toutes les villes (legacy - charge tout en mémoire)
+   * @deprecated Utiliser getVilles() avec pagination côté serveur
+   */
+  async getAllVilles(search?: string): Promise<Ville[]> {
+    if (this.villesCache && !search) {
+      return this.villesCache;
+    }
+
+    try {
       const { data } = await apiClient.get<Ville[] | PaginatedResponse<Ville>>("/villes/", {
         params: { 
-          page_size: 100,
+          page_size: 1000, // Large page size pour tout charger
           search 
         },
       });

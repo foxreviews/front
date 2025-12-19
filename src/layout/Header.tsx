@@ -1,20 +1,34 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../hooks";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("Accueil");
   const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const { pathname } = useLocation();
   const isHome = pathname === "/";
 
-  const links = [
+  const publicLinks = [
     { label: "Accueil", href: "/" },
-    { label: "Catégories", href: "/#reviews" },
-    { label: "Villes", href: "/#submit" },
+    { label: "Catégories", href: "/categories" },
+    { label: "Sous-catégories", href: "/sous-categories" },
+    { label: "Villes", href: "/villes" },
     { label: "Contact", href: "/#contact" },
-    { label: "À Propos", href: "/#apropos" },
+  ];
+
+  const clientLinks = [
+    { label: "Dashboard", href: "/client/dashboard" },
+    { label: "Mon Entreprise", href: "/client/entreprise" },
+    { label: "Mes Avis", href: "/client/upload-avis" },
+    { label: "Facturation", href: "/client/billing" },
+  ];
+
+  const authLinks = [
+    { label: "Connexion", href: "/login" },
+    { label: "Inscription", href: "/register" },
   ];
 
   useEffect(() => {
@@ -43,22 +57,85 @@ export default function Header() {
       ? "text-gray-700"
       : "text-white";
 
+    const isExternal = link.href.startsWith("http");
+
     return (
       <a
         key={link.label}
         href={link.href}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
         onClick={() => {
           setActive(link.label);
           setOpen(false);
         }}
         className={`
           block px-6 py-2 cursor-pointer transition-colors
-          ${active === link.label ? "text-orange-500 font-bold" : baseColor}
+          ${active === link.label || pathname === link.href ? "text-orange-500 font-bold" : baseColor}
           hover:text-orange-500
         `}
       >
         {link.label}
       </a>
+    );
+  };
+
+  const renderDropdown = (
+    label: string,
+    links: { label: string; href: string }[],
+    isMobile = false
+  ) => {
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const baseColor = isMobile
+      ? "text-gray-700"
+      : isSolidHeader
+      ? "text-gray-700"
+      : "text-white";
+
+    if (isMobile) {
+      // Mobile: Simple list
+      return (
+        <div key={label}>
+          <div className="px-6 py-2 font-bold text-gray-900 border-t">{label}</div>
+          {links.map((link) => renderLink(link, true))}
+        </div>
+      );
+    }
+
+    // Desktop: Dropdown
+    return (
+      <div
+        key={label}
+        className="relative"
+        onMouseEnter={() => setDropdownOpen(true)}
+        onMouseLeave={() => setDropdownOpen(false)}
+      >
+        <button
+          className={`
+            px-6 py-2 cursor-pointer transition-colors flex items-center gap-2
+            ${baseColor} hover:text-orange-500
+          `}
+        >
+          {label}
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {dropdownOpen && (
+          <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50">
+            {links.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={() => setActive(link.label)}
+                className="block px-6 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -85,8 +162,14 @@ export default function Header() {
         </a>
 
         {/* Desktop menu */}
-        <nav className="hidden md:flex space-x-6">
-          {links.map((link) => renderLink(link))}
+        <nav className="hidden md:flex items-center space-x-2">
+          {publicLinks.map((link) => renderLink(link))}
+          
+          {isAuthenticated ? (
+            renderDropdown("Espace Client", clientLinks)
+          ) : (
+            renderDropdown("Connexion", authLinks)
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -105,7 +188,13 @@ export default function Header() {
       {/* Mobile menu */}
       {open && (
         <nav className="md:hidden bg-white shadow-lg">
-          {links.map((link) => renderLink(link, true))}
+          {publicLinks.map((link) => renderLink(link, true))}
+          
+          {isAuthenticated ? (
+            renderDropdown("Espace Client", clientLinks, true)
+          ) : (
+            renderDropdown("Connexion", authLinks, true)
+          )}
         </nav>
       )}
     </header>

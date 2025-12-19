@@ -5,8 +5,11 @@
 
 export { useSearch } from "./useSearch";
 export { useFetch } from "./useFetch";
-export { useCategories, useSousCategories, useVilles } from "./useReference";
+export { useCategories, useSousCategories, useVilles, useReference } from "./useReference";
 export { useProLocalisation } from "./useProLocalisation";
+export { useAuth } from "./useAuth";
+export { useDashboard, useEntreprise, useAvis, useSponsorisations } from "./useClient";
+export { useBilling, useInvoice } from "./useBilling";
 
 // Futurs hooks à ajouter ici
 // export { useAuth } from "./useAuth";

@@ -23,11 +23,18 @@ export interface SousCategorie {
  * Types pour les villes
  */
 export interface Ville {
-  id: string; // UUID ou identifiant string
+  id: string;
   nom: string;
   slug: string;
-  code_postal?: string;
+  code_postal_principal?: string;
+  codes_postaux?: string[];
   departement?: string;
+  region?: string;
+  lat?: number;
+  lng?: number;
+  population?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**

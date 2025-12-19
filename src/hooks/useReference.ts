@@ -70,3 +70,34 @@ export function useVilles(search?: string) {
 
   return { villes, loading, error };
 }
+
+/**
+ * Hook combiné pour charger toutes les données de référence
+ */
+export function useReference() {
+  const [categories, setCategories] = useState<Categorie[]>([]);
+  const [sousCategories, setSousCategories] = useState<SousCategorie[]>([]);
+  const [villes, setVilles] = useState<Ville[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    Promise.all([
+      referenceService.getCategories(),
+      referenceService.getSousCategories(),
+      referenceService.getVilles()
+    ])
+      .then(([cats, sousCats, vills]) => {
+        setCategories(cats);
+        setSousCategories(sousCats);
+        setVilles(vills);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { categories, sousCategories, villes, loading, error };
+}
