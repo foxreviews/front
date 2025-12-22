@@ -6,6 +6,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("Accueil");
   const [scrolled, setScrolled] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
   const { pathname } = useLocation();
@@ -85,7 +86,6 @@ export default function Header() {
     links: { label: string; href: string }[],
     isMobile = false
   ) => {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const baseColor = isMobile
       ? "text-gray-700"
       : isSolidHeader
@@ -103,12 +103,14 @@ export default function Header() {
     }
 
     // Desktop: Dropdown
+    const isOpen = dropdownOpen === label;
+    
     return (
       <div
         key={label}
         className="relative"
-        onMouseEnter={() => setDropdownOpen(true)}
-        onMouseLeave={() => setDropdownOpen(false)}
+        onMouseEnter={() => setDropdownOpen(label)}
+        onMouseLeave={() => setDropdownOpen(null)}
       >
         <button
           className={`
@@ -121,7 +123,7 @@ export default function Header() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        {dropdownOpen && (
+        {isOpen && (
           <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50">
             {links.map((link) => (
               <a

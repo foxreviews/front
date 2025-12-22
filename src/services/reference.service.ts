@@ -1,5 +1,17 @@
 import { apiClient } from "../api/search";
-import type { Categorie, SousCategorie, Ville, PaginatedResponse } from "../types/reference";
+import type { 
+  Categorie, 
+  CategorieDetail,
+  SousCategorie, 
+  SousCategorieAutocompleteItem,
+  SousCategorieAutocompleteParams,
+  Ville, 
+  VilleAutocompleteParams,
+  VilleAutocompleteResponse,
+  VilleLookupParams,
+  VilleStats,
+  PaginatedResponse 
+} from "../types/reference";
 
 /**
  * Service pour les données de référence (catégories, sous-catégories, villes)
@@ -199,32 +211,19 @@ class ReferenceService {
 
   /**
    * Autocomplete de villes (endpoint optimisé avec cache et index trigram)
-   * @param query - Texte recherché (nom ou code postal)
-   * @param filters - Filtres optionnels (code_postal, region, departement)
-   * @param limit - Nombre maximum de résultats (défaut: 10, max: 50)
    */
   async autocompleteVilles(
-    query: string,
-    filters?: {
-      code_postal?: string;
-      region?: string;
-      departement?: string;
-    },
-    limit: number = 10
-  ): Promise<import('../types/reference').VilleAutocompleteResponse> {
+    params: VilleAutocompleteParams
+  ): Promise<VilleAutocompleteResponse> {
     try {
-      const params: Record<string, any> = {
-        q: query,
-        limit: Math.min(limit, 50),
+      const queryParams: Record<string, any> = {
+        ...params,
+        limit: params.limit ? Math.min(params.limit, 50) : 10,
       };
 
-      if (filters?.code_postal) params.code_postal = filters.code_postal;
-      if (filters?.region) params.region = filters.region;
-      if (filters?.departement) params.departement = filters.departement;
-
-      const { data } = await apiClient.get<any>(
+      const { data } = await apiClient.get<VilleAutocompleteResponse>(
         "/villes/autocomplete/",
-        { params }
+        { params: queryParams }
       );
 
       // L'API peut retourner soit un tableau directement, soit un objet { results: [...] }
@@ -232,34 +231,21 @@ class ReferenceService {
         return { results: data };
       }
       
-      // Assurer qu'on retourne toujours un format valide
       return data || { results: [] };
     } catch (error) {
       console.error("Erreur lors de l'autocomplete des villes:", error);
-      // Retourner un objet vide plutôt qu'une erreur pour éviter les crashs
       return { results: [] };
     }
   }
 
   /**
    * Lookup de ville (recherche exacte par ID ou slug)
-   * @param idOrSlug - UUID ou slug de la ville
-   * @param isSlug - Si true, recherche par slug, sinon par ID
    */
-  async lookupVille(idOrSlug: string, isSlug: boolean = false): Promise<import('../types/reference').Ville> {
+  async lookupVille(params: VilleLookupParams): Promise<Ville> {
     try {
-      const params: Record<string, string> = {};
-      
-      if (isSlug) {
-        params.slug = idOrSlug;
-      } else {
-        params.id = idOrSlug;
-      }
-
-      const { data } = await apiClient.get<import('../types/reference').Ville>("/villes/lookup/", {
+      const { data } = await apiClient.get<Ville>("/villes/lookup/", {
         params,
       });
-
       return data;
     } catch (error) {
       console.error("Erreur lors du lookup de ville:", error);
@@ -270,9 +256,9 @@ class ReferenceService {
   /**
    * Statistiques globales des villes
    */
-  async getVilleStats(): Promise<import('../types/reference').VilleStats> {
+  async getVilleStats(): Promise<VilleStats> {
     try {
-      const { data } = await apiClient.get<import('../types/reference').VilleStats>("/villes/stats/");
+      const { data } = await apiClient.get<VilleStats>("/villes/stats/");
       return data;
     } catch (error) {
       console.error("Erreur lors du chargement des statistiques:", error);
@@ -282,31 +268,22 @@ class ReferenceService {
 
   /**
    * Autocomplete de sous-catégories (endpoint optimisé)
-   * @param query - Texte recherché (nom, description, mots-clés)
-   * @param categorieId - UUID de la catégorie pour filtrer (optionnel)
-   * @param limit - Nombre maximum de résultats (défaut: 10, max: 50)
    */
   async autocompleteSousCategories(
-    query: string,
-    categorieId?: string,
-    limit: number = 10
-  ): Promise<SousCategorie[]> {
+    params: SousCategorieAutocompleteParams
+  ): Promise<SousCategorieAutocompleteItem[]> {
     try {
-      const params: Record<string, any> = {
-        q: query,
-        limit: Math.min(limit, 50),
+      const queryParams = {
+        ...params,
+        limit: params.limit ? Math.min(params.limit, 50) : 10,
       };
 
-      if (categorieId) {
-        params.categorie = categorieId;
-      }
-
-      const { data } = await apiClient.get<{ results: SousCategorie[] }>(
+      const { data } = await apiClient.get<{ results: SousCategorieAutocompleteItem[] }>(
         "/sous-categories/autocomplete/",
-        { params }
+        { params: queryParams }
       );
 
-      return data.results;
+      return data.results || [];
     } catch (error) {
       console.error("Erreur lors de l'autocomplete des sous-catégories:", error);
       throw new Error("Impossible de charger les suggestions de sous-catégories");
@@ -316,9 +293,9 @@ class ReferenceService {
   /**
    * Récupère les détails d'une catégorie avec ses sous-catégories
    */
-  async getCategorieDetail(id: string): Promise<Categorie & { sous_categories: SousCategorie[] }> {
+  async getCategorieDetail(id: string): Promise<CategorieDetail> {
     try {
-      const { data } = await apiClient.get<Categorie & { sous_categories: SousCategorie[] }>(
+      const { data } = await apiClient.get<CategorieDetail>(
         `/categories/${id}/`
       );
       return data;

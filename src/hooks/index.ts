@@ -16,7 +16,8 @@ export {
   useVilleLookup, 
   useVilleStats 
 } from "./useAutocomplete";
-
-// Futurs hooks à ajouter ici
-// export { useAuth } from "./useAuth";
-// export { useEntreprise } from "./useEntreprise";
+export { useTracking, useTrackView, useTrackClick } from "./useTracking";
+export { useExport } from "./useExport";
+export { useUsers, useUser } from "./useUsers";
+export { useAccount } from "./useAccount";
+export { usePermissions, Permission, withPermission, withRole } from "./usePermissions";

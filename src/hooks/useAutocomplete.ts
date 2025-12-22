@@ -32,7 +32,7 @@ export function useVilleAutocomplete(
     // Debounce: attendre que l'utilisateur arrête de taper
     const timeoutId = setTimeout(() => {
       referenceService
-        .autocompleteVilles(query, filters, 10)
+        .autocompleteVilles({ q: query, ...filters, limit: 10 })
         .then((response) => setResults(response?.results || []))
         .catch((err) => {
           setError(err.message);
@@ -73,7 +73,7 @@ export function useSousCategorieAutocomplete(
     // Debounce: attendre que l'utilisateur arrête de taper
     const timeoutId = setTimeout(() => {
       referenceService
-        .autocompleteSousCategories(query, categorieId, 10)
+        .autocompleteSousCategories({ q: query, categorie: categorieId, limit: 10 })
         .then(setResults)
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
@@ -98,7 +98,7 @@ export function useVilleLookup(idOrSlug?: string, isSlug: boolean = false) {
       setLoading(true);
       setError(null);
       try {
-        const result = await referenceService.lookupVille(id, slug);
+        const result = await referenceService.lookupVille(slug ? { slug: id } : { id });
         setVille(result);
         return result;
       } catch (err: any) {

@@ -5,6 +5,10 @@ import type {
   RegisterData,
   AuthToken,
   User,
+  AccountData,
+  AccountUpdateData,
+  PasswordResetRequest,
+  PasswordResetResponse,
 } from '../types/auth';
 
 /**
@@ -94,7 +98,7 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<{ token: string; user: User }> {
     try {
-      const { data } = await apiClient.post<AuthToken>('/auth-token/', credentials);
+      const { data } = await apiClient.post<AuthToken>('/auth/login/', credentials);
       
       if (!data.token) {
         throw new AuthError('Token non reçu du serveur', 500);
@@ -140,12 +144,11 @@ class AuthService {
         throw new AuthError('Le mot de passe doit contenir au moins 8 caractères', 400);
       }
 
-      // Appel API d'inscription (à adapter selon votre backend)
-      const { data: responseData } = await apiClient.post<AuthToken>('/register/', {
+      // Appel API d'inscription
+      const { data: responseData } = await apiClient.post<AuthToken>('/auth/register/', {
         email: data.email,
         password: data.password,
-        entreprise_name: data.entreprise_name,
-        siren: data.siren,
+        name: data.name,
       });
 
       if (!responseData.token) {
@@ -197,9 +200,23 @@ class AuthService {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const { data } = await apiClient.get<User>('/users/me/');
-      this.setUser(data);
-      return data;
+      const accountData = await this.getAccount();
+      
+      // Convertir AccountData en User
+      const user: User = {
+        id: accountData.id,
+        email: accountData.email,
+        name: accountData.name,
+        is_active: accountData.is_active,
+        role: accountData.role,
+        phone: accountData.phone,
+        entreprise_id: accountData.entreprise_id,
+        created_at: accountData.created_at,
+        updated_at: accountData.updated_at,
+      };
+      
+      this.setUser(user);
+      return user;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
@@ -224,6 +241,119 @@ class AuthService {
    */
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  /**
+   * Demande de réinitialisation du mot de passe
+   * Envoie un email avec un lien de réinitialisation
+   * @throws {AuthError} Si l'email est invalide
+   */
+  async requestPasswordReset(request: PasswordResetRequest): Promise<PasswordResetResponse> {
+    try {
+      const { data } = await apiClient.post<PasswordResetResponse>(
+        '/auth/password-reset/',
+        request
+      );
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ 
+          error?: string; 
+          detail?: string;
+          email?: string[];
+        }>;
+        
+        const errorData = axiosError.response?.data;
+        let errorMessage = 'Une erreur est survenue lors de la demande de réinitialisation';
+
+        if (errorData?.email) {
+          errorMessage = errorData.email[0];
+        } else if (errorData?.error || errorData?.detail) {
+          errorMessage = errorData.error || errorData.detail || errorMessage;
+        }
+
+        throw new AuthError(
+          errorMessage,
+          axiosError.response?.status,
+        );
+      }
+      
+      throw new AuthError('Une erreur réseau est survenue. Veuillez réessayer.');
+    }
+  }
+
+  /**
+   * Récupère les informations du compte utilisateur connecté
+   * @throws {AuthError} Si l'utilisateur n'est pas authentifié
+   */
+  async getAccount(): Promise<AccountData> {
+    try {
+      const { data } = await apiClient.get<AccountData>('/account/me/');
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 401) {
+          this.clearToken();
+          throw new AuthError('Session expirée. Veuillez vous reconnecter.', 401);
+        }
+      }
+      throw new AuthError('Impossible de récupérer les informations du compte');
+    }
+  }
+
+  /**
+   * Met à jour les informations du compte utilisateur
+   * @throws {AuthError} Si la mise à jour échoue
+   */
+  async updateAccount(updateData: AccountUpdateData): Promise<AccountData> {
+    try {
+      const { data } = await apiClient.put<AccountData>(
+        '/account/update/',
+        updateData
+      );
+      
+      // Mettre à jour l'utilisateur en cache si nécessaire
+      const currentUser = this.getUser();
+      if (currentUser) {
+        const updatedUser: User = {
+          ...currentUser,
+          name: data.name,
+          phone: data.phone,
+        };
+        this.setUser(updatedUser);
+      }
+
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ 
+          error?: string; 
+          detail?: string;
+          name?: string[];
+          phone?: string[];
+        }>;
+        
+        const errorData = axiosError.response?.data;
+        let errorMessage = 'Une erreur est survenue lors de la mise à jour';
+
+        if (errorData?.name) {
+          errorMessage = errorData.name[0];
+        } else if (errorData?.phone) {
+          errorMessage = errorData.phone[0];
+        } else if (errorData?.error || errorData?.detail) {
+          errorMessage = errorData.error || errorData.detail || errorMessage;
+        }
+
+        throw new AuthError(
+          errorMessage,
+          axiosError.response?.status,
+          errorData as Record<string, string[]>
+        );
+      }
+      
+      throw new AuthError('Une erreur réseau est survenue. Veuillez réessayer.');
+    }
   }
 }
 

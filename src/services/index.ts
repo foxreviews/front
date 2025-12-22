@@ -5,8 +5,11 @@
 
 export { searchService } from "./search.service";
 export { referenceService } from "./reference.service";
-
-// Futurs services à ajouter ici
-// export { entrepriseService } from "./entreprise.service";
-// export { authService } from "./auth.service";
-// export { avisService } from "./avis.service";
+export { authService, AuthError } from './auth.service';
+export { billingService, BillingError } from './billing.service';
+export { clientService, ClientError } from './client.service';
+export { trackingService, TrackingError } from './tracking.service';
+export { exportService, ExportError } from './export.service';
+export { proLocalisationService, ProLocalisationError } from './prolocalisation.service';
+export { sponsorisationService, SponsorisationError } from './sponsorisation.service';
+export { userService, UserError } from './user.service';

@@ -3,12 +3,15 @@ import { apiClient } from '../api/search';
 import type {
   Dashboard,
   Entreprise,
+  EntrepriseCreateData,
   EntrepriseUpdateData,
   AvisDecrypte,
+  AvisFilters,
   UploadAvisRequest,
   UploadAvisResponse,
   Sponsorisation,
 } from '../types/client';
+import type { PaginatedResponse } from '../types/common';
 
 /**
  * Classe d'erreur personnalisée pour les erreurs client
@@ -63,7 +66,7 @@ class ClientService {
   }
 
   /**
-   * Met à jour les informations d'une entreprise
+   * Met à jour les informations d'une entreprise (PATCH)
    * @throws {ClientError} Si la mise à jour échoue
    */
   async updateEntreprise(id: string, updateData: EntrepriseUpdateData): Promise<Entreprise> {
@@ -82,6 +85,58 @@ class ClientService {
     } catch (error) {
       if (error instanceof ClientError) throw error;
       throw this.handleError(error, 'Impossible de mettre à jour l\'entreprise');
+    }
+  }
+
+  /**
+   * Crée une nouvelle entreprise
+   * @throws {ClientError} Si la création échoue
+   */
+  async createEntreprise(createData: EntrepriseCreateData): Promise<Entreprise> {
+    try {
+      // Validation des données
+      if (!createData.siren || createData.siren.length !== 9) {
+        throw new ClientError('Le SIREN doit contenir 9 chiffres', 400);
+      }
+
+      if (createData.email_contact && !this.isValidEmail(createData.email_contact)) {
+        throw new ClientError('L\'adresse email est invalide', 400);
+      }
+
+      if (createData.site_web && !this.isValidUrl(createData.site_web)) {
+        throw new ClientError('L\'URL du site web est invalide', 400);
+      }
+
+      const { data } = await apiClient.post<Entreprise>('/entreprises/', createData);
+      return data;
+    } catch (error) {
+      if (error instanceof ClientError) throw error;
+      throw this.handleError(error, 'Impossible de créer l\'entreprise');
+    }
+  }
+
+  /**
+   * Met à jour complètement une entreprise (PUT)
+   * @throws {ClientError} Si la mise à jour échoue
+   */
+  async replaceEntreprise(id: string, updateData: EntrepriseCreateData): Promise<Entreprise> {
+    try {
+      const { data } = await apiClient.put<Entreprise>(`/entreprises/${id}/`, updateData);
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de remplacer l\'entreprise');
+    }
+  }
+
+  /**
+   * Supprime une entreprise
+   * @throws {ClientError} Si la suppression échoue
+   */
+  async deleteEntreprise(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/entreprises/${id}/`);
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de supprimer l\'entreprise');
     }
   }
 
@@ -108,8 +163,37 @@ class ClientService {
   }
 
   /**
-   * Récupère la liste des avis d'une entreprise
+   * Récupère la liste des avis avec filtres
    * @throws {ClientError} Si la requête échoue
+   */
+  async getAvisDecryptes(filters: AvisFilters = {}): Promise<PaginatedResponse<AvisDecrypte>> {
+    try {
+      const { data } = await apiClient.get<PaginatedResponse<AvisDecrypte>>(
+        '/avis-decryptes/',
+        { params: filters }
+      );
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de charger les avis');
+    }
+  }
+
+  /**
+   * Récupère les détails d'un avis
+   * @throws {ClientError} Si l'avis n'existe pas
+   */
+  async getAvisDecrypte(avisId: string): Promise<AvisDecrypte> {
+    try {
+      const { data } = await apiClient.get<AvisDecrypte>(`/avis-decryptes/${avisId}/`);
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de charger l\'avis');
+    }
+  }
+
+  /**
+   * Récupère la liste des avis d'une entreprise (méthode simplifiée)
+   * @deprecated Utiliser getAvisDecryptes avec filtres
    */
   async getAvis(entrepriseId: string, page: number = 1): Promise<{ results: AvisDecrypte[]; count: number; next: string | null }> {
     try {
@@ -126,16 +210,11 @@ class ClientService {
   }
 
   /**
-   * Récupère les détails d'un avis
-   * @throws {ClientError} Si l'avis n'existe pas
+   * Récupère les détails d'un avis (méthode simplifiée)
+   * @deprecated Utiliser getAvisDecrypte
    */
   async getAvisDetail(avisId: string): Promise<AvisDecrypte> {
-    try {
-      const { data } = await apiClient.get<AvisDecrypte>(`/avis-decryptes/${avisId}/`);
-      return data;
-    } catch (error) {
-      throw this.handleError(error, 'Impossible de charger l\'avis');
-    }
+    return this.getAvisDecrypte(avisId);
   }
 
   /**

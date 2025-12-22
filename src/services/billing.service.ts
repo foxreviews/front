@@ -4,7 +4,6 @@ import type {
   CreateCheckoutRequest,
   CreateCheckoutResponse,
   Invoice,
-  BillingHistory,
   Subscription,
 } from '../types/billing';
 
@@ -67,27 +66,12 @@ class BillingService {
    * Récupère l'historique des factures
    * @throws {BillingError} Si la requête échoue
    */
-  async getInvoices(limit: number = 10): Promise<BillingHistory> {
+  async getInvoices(): Promise<Invoice[]> {
     try {
-      const { data } = await apiClient.get<BillingHistory>('/stripe/invoices/', {
-        params: { limit },
-      });
+      const { data } = await apiClient.get<Invoice[]>('/billing/invoices/');
       return data;
     } catch (error) {
       throw this.handleError(error, 'Impossible de charger l\'historique des factures');
-    }
-  }
-
-  /**
-   * Récupère les détails d'une facture
-   * @throws {BillingError} Si la facture n'existe pas
-   */
-  async getInvoiceDetail(invoiceId: string): Promise<Invoice> {
-    try {
-      const { data } = await apiClient.get<Invoice>(`/stripe/invoices/${invoiceId}/`);
-      return data;
-    } catch (error) {
-      throw this.handleError(error, 'Impossible de charger la facture');
     }
   }
 
@@ -97,43 +81,13 @@ class BillingService {
    */
   async getSubscription(): Promise<Subscription | null> {
     try {
-      const { data } = await apiClient.get<Subscription>('/stripe/subscription/');
+      const { data } = await apiClient.get<Subscription>('/billing/subscription/');
       return data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         return null; // Pas d'abonnement actif
       }
       throw this.handleError(error, 'Impossible de charger l\'abonnement');
-    }
-  }
-
-  /**
-   * Annule un abonnement
-   * @throws {BillingError} Si l'annulation échoue
-   */
-  async cancelSubscription(subscriptionId: string): Promise<{ message: string }> {
-    try {
-      const { data } = await apiClient.post<{ message: string }>(
-        `/stripe/subscription/${subscriptionId}/cancel/`
-      );
-      return data;
-    } catch (error) {
-      throw this.handleError(error, 'Impossible d\'annuler l\'abonnement');
-    }
-  }
-
-  /**
-   * Réactive un abonnement annulé
-   * @throws {BillingError} Si la réactivation échoue
-   */
-  async reactivateSubscription(subscriptionId: string): Promise<{ message: string }> {
-    try {
-      const { data } = await apiClient.post<{ message: string }>(
-        `/stripe/subscription/${subscriptionId}/reactivate/`
-      );
-      return data;
-    } catch (error) {
-      throw this.handleError(error, 'Impossible de réactiver l\'abonnement');
     }
   }
 
@@ -150,22 +104,22 @@ class BillingService {
   /**
    * Formate un montant en euros
    */
-  formatAmount(amountInCents: number): string {
+  formatAmount(amount: number): string {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
-    }).format(amountInCents / 100);
+    }).format(amount);
   }
 
   /**
-   * Formate une date timestamp
+   * Formate une date ISO
    */
-  formatDate(timestamp: number): string {
+  formatDate(isoDate: string): string {
     return new Intl.DateTimeFormat('fr-FR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(timestamp * 1000));
+    }).format(new Date(isoDate));
   }
 
   /**

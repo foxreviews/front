@@ -79,7 +79,7 @@ export default function Hero() {
           </div>
 
           {/* RIGHT VISUAL */}
-          <div className="relative mx-auto w-full max-w-xs sm:max-w-md lg:max-w-lg">
+          <div className="hidden lg:block relative mx-auto w-full max-w-xs sm:max-w-md lg:max-w-lg">
             <img
               src="/assets/hero-fox.png"
               alt="Hero Illustration"

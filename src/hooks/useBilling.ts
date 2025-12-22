@@ -22,8 +22,8 @@ export function useBilling() {
     setError(null);
 
     try {
-      const data: BillingHistory = await billingService.getInvoices();
-      setInvoices(data.invoices);
+      const data = await billingService.getInvoices();
+      setInvoices(data);
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 
@@ -71,14 +71,14 @@ export function useBilling() {
     }
   }, []);
 
-  const cancelSubscription = useCallback(async (subscriptionId: string): Promise<boolean> => {
+  const cancelSubscription = useCallback(async (_subscriptionId: string): Promise<boolean> => {
     setProcessing(true);
     setError(null);
 
     try {
-      await billingService.cancelSubscription(subscriptionId);
-      await fetchSubscription(); // Rafraîchit les données
-      return true;
+      // TODO: Implement cancelSubscription in billing service
+      setError('Fonctionnalité non implémentée');
+      return false;
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 
@@ -88,16 +88,16 @@ export function useBilling() {
     } finally {
       setProcessing(false);
     }
-  }, [fetchSubscription]);
+  }, []);
 
-  const reactivateSubscription = useCallback(async (subscriptionId: string): Promise<boolean> => {
+  const reactivateSubscription = useCallback(async (_subscriptionId: string): Promise<boolean> => {
     setProcessing(true);
     setError(null);
 
     try {
-      await billingService.reactivateSubscription(subscriptionId);
-      await fetchSubscription(); // Rafraîchit les données
-      return true;
+      // TODO: Implement reactivateSubscription in billing service
+      setError('Fonctionnalité non implémentée');
+      return false;
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 
@@ -107,7 +107,7 @@ export function useBilling() {
     } finally {
       setProcessing(false);
     }
-  }, [fetchSubscription]);
+  }, []);
 
   const downloadInvoice = useCallback((invoiceUrl: string) => {
     try {
@@ -160,8 +160,9 @@ export function useInvoice(invoiceId: string | null) {
     setError(null);
 
     try {
-      const data = await billingService.getInvoiceDetail(invoiceId);
-      setInvoice(data);
+      // TODO: Implement getInvoiceDetail in billing service
+      setError('Fonctionnalité non implémentée');
+      setInvoice(null);
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 

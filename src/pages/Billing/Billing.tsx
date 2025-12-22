@@ -226,13 +226,13 @@ export function Billing() {
               <tbody>
                 {invoices.map((invoice) => (
                   <tr key={invoice.id}>
-                    <td className="invoice-number">{invoice.number}</td>
-                    <td>{formatDate(invoice.created)}</td>
+                    <td className="invoice-number">{invoice.invoice_number}</td>
+                    <td>{formatDate(invoice.created_at)}</td>
                     <td className="invoice-amount">
                       {new Intl.NumberFormat('fr-FR', {
                         style: 'currency',
                         currency: invoice.currency.toUpperCase(),
-                      }).format(invoice.amount / 100)}
+                      }).format(invoice.amount_due / 100)}
                     </td>
                     <td>
                       <span className={`invoice-status status-${invoice.status}`}>

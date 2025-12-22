@@ -19,7 +19,7 @@ APP_NAME="fox-reviews-front"
 
 echo ""
 echo "📦 Étape 1/4 : Installation des dépendances..."
-npm install
+npm install --legacy-peer-deps
 
 echo ""
 echo "🔨 Étape 2/4 : Build de l'application..."

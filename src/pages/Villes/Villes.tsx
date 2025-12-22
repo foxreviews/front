@@ -251,8 +251,8 @@ export function Villes() {
                 </div>
                 <div className="ville-info">
                   <h3 className="ville-name">{ville.nom}</h3>
-                  {ville.code_postal_principal && (
-                    <p className="ville-code">{ville.code_postal_principal}</p>
+                  {ville.code_postal && (
+                    <p className="ville-code">{ville.code_postal}</p>
                   )}
                   {ville.departement && (
                     <p className="ville-departement">Dép. {ville.departement}</p>
