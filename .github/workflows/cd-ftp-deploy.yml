@@ -1,0 +1,35 @@
+name: CD
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  web-deploy:
+    name: Deploy front end app
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.2
+        with:
+          node-version: 24.0.0
+
+      - name: npm install
+        run: npm install --legacy-peer-deps
+
+      - name: Build React App
+        run: npm run build
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_SERVER_NAME }}
+          password: ${{ secrets.FTP_SERVER_PASS }}
+          server-dir: /public_html/
+          local-dir: ./dist/

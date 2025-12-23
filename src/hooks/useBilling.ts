@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { billingService, BillingError } from '../services/billing.service';
 import type { 
   CreateCheckoutRequest, 
-  BillingHistory, 
   Invoice, 
   Subscription 
 } from '../types/billing';

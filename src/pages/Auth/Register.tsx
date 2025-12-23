@@ -15,6 +15,7 @@ export function Register() {
     email: '',
     password: '',
     password_confirm: '',
+    name: '',
     entreprise_name: '',
     siren: '',
   });
@@ -26,7 +27,7 @@ export function Register() {
     clearError();
 
     // Validation côté client
-    if (!formData.email || !formData.password || !formData.password_confirm) {
+    if (!formData.email || !formData.password || !formData.password_confirm || !formData.name) {
       setLocalError('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -139,6 +140,26 @@ export function Register() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="name">
+                  Nom complet <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  disabled={loading}
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  placeholder="Jean Dupont"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
                 <Label htmlFor="entreprise_name">
                   <Building2 className="inline h-4 w-4 mr-1" />
                   Nom de l'entreprise
@@ -155,26 +176,26 @@ export function Register() {
                   placeholder="Ma Super Entreprise"
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="siren">
-                <Hash className="inline h-4 w-4 mr-1" />
-                SIREN
-              </Label>
-              <Input
-                id="siren"
-                type="text"
-                pattern="\d{9}"
-                maxLength={9}
-                disabled={loading}
-                value={formData.siren}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, siren: e.target.value.replace(/\D/g, '') }))
-                }
-                placeholder="123456789"
-              />
-              <p className="text-xs text-muted-foreground">9 chiffres</p>
+              <div className="space-y-2">
+                <Label htmlFor="siren">
+                  <Hash className="inline h-4 w-4 mr-1" />
+                  SIREN
+                </Label>
+                <Input
+                  id="siren"
+                  type="text"
+                  pattern="\d{9}"
+                  maxLength={9}
+                  disabled={loading}
+                  value={formData.siren}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, siren: e.target.value.replace(/\D/g, '') }))
+                  }
+                  placeholder="123456789"
+                />
+                <p className="text-xs text-muted-foreground">9 chiffres</p>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
