@@ -7,12 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2, Star, TrendingUp, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export function Login() {
   const { login, loading, error: authError, clearError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const nextPath = new URLSearchParams(location.search).get('next');
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    username: '',
+    email: '',
     password: '',
   });
   const [localError, setLocalError] = useState<string | null>(null);
@@ -23,19 +26,23 @@ export function Login() {
     clearError();
 
     // Validation côté client
-    if (!credentials.username || !credentials.password) {
+    if (!credentials.email || !credentials.password) {
       setLocalError('Veuillez remplir tous les champs');
       return;
     }
 
-    if (!credentials.username.includes('@')) {
+    if (!credentials.email.includes('@')) {
       setLocalError('Veuillez entrer une adresse email valide');
       return;
     }
 
     try {
       await login(credentials);
-      // Redirection gérée par le router ou le composant parent
+      if (nextPath) {
+        navigate(nextPath, { replace: true });
+      } else {
+        navigate('/client/dashboard', { replace: true });
+      }
     } catch (err) {
       // L'erreur est déjà gérée par le hook
       console.error('Erreur de connexion:', err);
@@ -118,9 +125,9 @@ export function Login() {
                 autoComplete="email"
                 placeholder="vous@entreprise.fr"
                 disabled={loading}
-                value={credentials.username}
+                value={credentials.email}
                 onChange={(e) =>
-                  setCredentials((prev) => ({ ...prev, username: e.target.value }))
+                  setCredentials((prev) => ({ ...prev, email: e.target.value }))
                 }
               />
             </div>
@@ -129,7 +136,7 @@ export function Login() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Link 
-                  to="/forgot-password" 
+                  to={nextPath ? `/forgot-password?next=${encodeURIComponent(nextPath)}` : '/forgot-password'}
                   className="text-sm text-primary hover:underline"
                 >
                   Mot de passe oublié ?
@@ -175,7 +182,7 @@ export function Login() {
           </div>
           <div className="text-center">
             <Link 
-              to="/register" 
+              to={nextPath ? `/register?next=${encodeURIComponent(nextPath)}` : '/register'}
               className="inline-flex items-center justify-center w-full px-4 py-3 border-2 border-orange-200 rounded-lg text-orange-600 hover:bg-orange-50 font-semibold transition-colors"
             >
               Créer un compte gratuitement

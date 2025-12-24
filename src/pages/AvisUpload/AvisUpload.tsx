@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth, useAvis } from '../../hooks';
 import type { AvisStatus } from '../../types/client';
 import './AvisUpload.css';
@@ -59,9 +60,9 @@ export function AvisUpload() {
             Remplacez votre avis actuel en uploadant un nouveau contenu
           </p>
         </div>
-        <a href="/client/dashboard" className="btn-outline">
+        <Link to="/client/dashboard" className="btn-outline">
           ← Retour au tableau de bord
-        </a>
+        </Link>
       </div>
 
       {successMessage && (

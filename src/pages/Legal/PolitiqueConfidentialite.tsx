@@ -1,4 +1,5 @@
 import './Legal.css';
+import { Link } from 'react-router-dom';
 
 export function PolitiqueConfidentialite() {
   return (
@@ -277,7 +278,7 @@ export function PolitiqueConfidentialite() {
             <li><strong>Délégué à la Protection des Données (DPO)</strong> : dpo@fox-reviews.fr</li>
             <li><strong>Service client</strong> : contact@fox-reviews.fr</li>
             <li><strong>Téléphone</strong> : +33 1 23 45 67 89</li>
-            <li><a href="/contact" className="legal-link">Formulaire de contact</a></li>
+            <li><Link to="/contact" className="legal-link">Formulaire de contact</Link></li>
           </ul>
         </section>
 

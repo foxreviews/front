@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks";
 
 export default function Header() {
@@ -17,7 +17,7 @@ export default function Header() {
     { label: "Catégories", href: "/categories" },
     { label: "Sous-catégories", href: "/sous-categories" },
     { label: "Villes", href: "/villes" },
-    { label: "Contact", href: "/#contact" },
+    { label: "Contact", href: "/contact" },
   ];
 
   const clientLinks = [
@@ -58,7 +58,30 @@ export default function Header() {
       ? "text-gray-700"
       : "text-white";
 
-    const isExternal = link.href.startsWith("http");
+    const isExternal = link.href.startsWith("http") || link.href.startsWith("mailto:");
+    const isInternal = link.href.startsWith("/") && !isExternal;
+
+    const className = `
+          block px-6 py-2 cursor-pointer transition-colors
+          ${active === link.label || pathname === link.href ? "text-orange-500 font-bold" : baseColor}
+          hover:text-orange-500
+        `;
+
+    if (isInternal) {
+      return (
+        <Link
+          key={link.label}
+          to={link.href}
+          onClick={() => {
+            setActive(link.label);
+            setOpen(false);
+          }}
+          className={className}
+        >
+          {link.label}
+        </Link>
+      );
+    }
 
     return (
       <a
@@ -70,11 +93,7 @@ export default function Header() {
           setActive(link.label);
           setOpen(false);
         }}
-        className={`
-          block px-6 py-2 cursor-pointer transition-colors
-          ${active === link.label || pathname === link.href ? "text-orange-500 font-bold" : baseColor}
-          hover:text-orange-500
-        `}
+        className={className}
       >
         {link.label}
       </a>
@@ -125,16 +144,38 @@ export default function Header() {
         </button>
         {isOpen && (
           <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50">
-            {links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setActive(link.label)}
-                className="block px-6 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
+            {links.map((link) => {
+              const isExternal = link.href.startsWith("http") || link.href.startsWith("mailto:");
+              const isInternal = link.href.startsWith("/") && !isExternal;
+              const className =
+                "block px-6 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-500 transition-colors";
+
+              if (isInternal) {
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    onClick={() => setActive(link.label)}
+                    className={className}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              }
+
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  onClick={() => setActive(link.label)}
+                  className={className}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
         )}
       </div>
@@ -152,7 +193,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-6 py-4 flex justify-between items-center">
         
         {/* Logo */}
-        <a href="/" className="inline-block">
+        <Link to="/" className="inline-block">
           <img
             src="/assets/hero-fox.png"
             alt="FoxReviews Logo"
@@ -161,7 +202,7 @@ export default function Header() {
               ${isSolidHeader ? "w-10 sm:w-12" : "w-12 sm:w-16"}
             `}
           />
-        </a>
+        </Link>
 
         {/* Desktop menu */}
         <nav className="hidden md:flex items-center space-x-2">

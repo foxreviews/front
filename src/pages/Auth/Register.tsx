@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks';
 import type { RegisterData } from '@/types/auth';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,9 @@ import { AlertCircle, Loader2, Building2, Mail, Lock, Hash, Star, Rocket, Shield
 
 export function Register() {
   const { register, loading, error: authError, clearError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const nextPath = new URLSearchParams(location.search).get('next');
   const [formData, setFormData] = useState<RegisterData>({
     email: '',
     password: '',
@@ -54,7 +57,11 @@ export function Register() {
 
     try {
       await register(formData);
-      // Redirection gérée par le router ou le composant parent
+      if (nextPath) {
+        navigate(nextPath, { replace: true });
+      } else {
+        navigate('/client/dashboard', { replace: true });
+      }
     } catch (err) {
       // L'erreur est déjà gérée par le hook
       console.error('Erreur d\'inscription:', err);
@@ -269,7 +276,7 @@ export function Register() {
           </div>
           <div className="text-center">
             <Link 
-              to="/login" 
+                to={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'}
               className="inline-flex items-center justify-center w-full px-4 py-3 border-2 border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 font-semibold transition-colors"
             >
               Se connecter à mon compte

@@ -1,4 +1,5 @@
 import './Legal.css';
+import { Link } from 'react-router-dom';
 
 export function About() {
   return (
@@ -74,8 +75,8 @@ export function About() {
           <h2>Contact</h2>
           <p>
             Vous avez des questions ? N'hésitez pas à nous contacter via notre{' '}
-            <a href="/contact" className="legal-link">formulaire de contact</a> ou à consulter notre{' '}
-            <a href="/faq" className="legal-link">FAQ</a>.
+            <Link to="/contact" className="legal-link">formulaire de contact</Link> ou à consulter notre{' '}
+            <Link to="/faq" className="legal-link">FAQ</Link>.
           </p>
         </section>
       </div>

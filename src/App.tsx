@@ -33,6 +33,9 @@ const EntrepriseManagement = lazy(() => import('./pages/EntrepriseManagement').t
 const AvisUpload = lazy(() => import('./pages/AvisUpload').then(m => ({ default: m.AvisUpload })));
 const Billing = lazy(() => import('./pages/Billing').then(m => ({ default: m.Billing })));
 
+// Sponsorisation
+const Subscribe = lazy(() => import('./pages/Sponsorship/Subscribe').then(m => ({ default: m.default })));
+
 function App() {
  
   return (
@@ -65,6 +68,9 @@ function App() {
           <Route path="/client/entreprise" element={<EntrepriseManagement />} />
           <Route path="/client/upload-avis" element={<AvisUpload />} />
           <Route path="/client/billing" element={<Billing />} />
+
+          {/* Sponsorisation */}
+          <Route path="/sponsorisation/abonnement" element={<Subscribe />} />
         </Routes>
       </Suspense>
     </MainLayout>

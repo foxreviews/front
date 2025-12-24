@@ -56,8 +56,9 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('fox_reviews_user');
       
       // Éviter la redirection si on est déjà sur la page de login
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      if (!window.location.hash.includes('/login')) {
+        // HashRouter: update hash only (no full page reload)
+        window.location.hash = '#/login';
       }
       
       return Promise.reject(error);

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth, useEntreprise } from '../../hooks';
 import type { EntrepriseUpdateData } from '../../types/client';
 import './EntrepriseManagement.css';
@@ -123,9 +124,9 @@ export function EntrepriseManagement() {
           <h1 className="page-title">Gestion de la fiche entreprise</h1>
           <p className="page-subtitle">Modifiez les informations de votre entreprise</p>
         </div>
-        <a href="/client/dashboard" className="btn-outline">
+        <Link to="/client/dashboard" className="btn-outline">
           ← Retour au tableau de bord
-        </a>
+        </Link>
       </div>
 
       {successMessage && (
@@ -359,9 +360,9 @@ export function EntrepriseManagement() {
           <p className="card-subtitle">
             Consultez l'avis décrypté actuellement affiché sur votre fiche publique
           </p>
-          <a href="/client/avis" className="btn-outline">
+          <Link to="/client/avis" className="btn-outline">
             Voir mes avis →
-          </a>
+          </Link>
         </div>
       </div>
     </div>

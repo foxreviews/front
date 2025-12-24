@@ -1,4 +1,5 @@
 import { useBilling } from '../../hooks';
+import { Link } from 'react-router-dom';
 import './Billing.css';
 
 export function Billing() {
@@ -77,9 +78,9 @@ export function Billing() {
           <h1 className="page-title">Facturation et paiements</h1>
           <p className="page-subtitle">Gérez vos abonnements et consultez vos factures</p>
         </div>
-        <a href="/client/dashboard" className="btn-outline">
+        <Link to="/client/dashboard" className="btn-outline">
           ← Retour au tableau de bord
-        </a>
+        </Link>
       </div>
 
       {/* Subscription Card */}
@@ -177,9 +178,9 @@ export function Billing() {
           </svg>
           <h2>Aucun abonnement actif</h2>
           <p>Passez en sponsorisé pour augmenter votre visibilité</p>
-          <a href="/client/sponsorship" className="btn-primary">
+          <Link to="/client/sponsorship" className="btn-primary">
             Souscrire à un abonnement
-          </a>
+          </Link>
         </div>
       )}
 

@@ -1,6 +1,8 @@
 import { CreditCard, CheckCircle, Star, MapPin, RefreshCcw } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 export default function SponsorshipCTA() {
+    const navigate = useNavigate();
    
     return (
         <section
@@ -47,7 +49,9 @@ export default function SponsorshipCTA() {
                         className="rounded-lg shadow-lg mx-auto py-10"
                     />
 
-                    <button 
+                    <button
+                    type="button"
+                    onClick={() => navigate('/sponsorisation/abonnement')}
                     className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-8 rounded-lg flex items-center justify-center gap-3 transition-colors mx-auto cursor-pointer">
                         <CreditCard className="w-5 h-5" />
                         Passer en résultat sponsorisé

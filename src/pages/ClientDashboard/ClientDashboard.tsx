@@ -1,5 +1,6 @@
 import { useDashboard } from '../../hooks';
 import { useAuth } from '../../hooks';
+import { Link } from 'react-router-dom';
 import './ClientDashboard.css';
 
 export function ClientDashboard() {
@@ -95,9 +96,9 @@ export function ClientDashboard() {
             )}
           </div>
           <div className="status-card-actions">
-            <a href="/client/billing" className="btn-outline">
+            <Link to="/client/billing" className="btn-outline">
               Gérer mon abonnement
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -126,9 +127,9 @@ export function ClientDashboard() {
           </div>
           <div className="status-card-actions">
             {!isSponsored && (
-              <a href="/client/sponsorship" className="btn-primary">
+              <Link to="/client/sponsorship" className="btn-primary">
                 Passer en sponsorisé
-              </a>
+              </Link>
             )}
           </div>
         </div>
@@ -219,17 +220,17 @@ export function ClientDashboard() {
       <div className="avis-section">
         <div className="section-header">
           <h2 className="section-title">Avis Récents</h2>
-          <a href="/client/avis" className="link-primary">
+          <Link to="/client/avis" className="link-primary">
             Voir tous les avis →
-          </a>
+          </Link>
         </div>
 
         {avis_recents.length === 0 ? (
           <div className="empty-avis">
             <p>Aucun avis disponible</p>
-            <a href="/client/upload-avis" className="btn-primary">
+            <Link to="/client/upload-avis" className="btn-primary">
               Ajouter un avis
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="avis-list">
@@ -246,9 +247,9 @@ export function ClientDashboard() {
                   <span className="avis-confidence">
                     Confiance: {(avis.confidence_score * 100).toFixed(0)}%
                   </span>
-                  <a href={`/client/avis/${avis.id}`} className="link-secondary">
+                  <Link to={`/client/avis/${avis.id}`} className="link-secondary">
                     Voir détails
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -260,7 +261,7 @@ export function ClientDashboard() {
       <div className="quick-actions">
         <h2 className="section-title">Actions Rapides</h2>
         <div className="actions-grid">
-          <a href="/client/entreprise" className="action-card">
+          <Link to="/client/entreprise" className="action-card">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -270,9 +271,9 @@ export function ClientDashboard() {
               />
             </svg>
             <span>Modifier ma fiche</span>
-          </a>
+          </Link>
           
-          <a href="/client/upload-avis" className="action-card">
+          <Link to="/client/upload-avis" className="action-card">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -282,9 +283,9 @@ export function ClientDashboard() {
               />
             </svg>
             <span>Uploader un avis</span>
-          </a>
+          </Link>
           
-          <a href="/client/billing" className="action-card">
+          <Link to="/client/billing" className="action-card">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -294,7 +295,7 @@ export function ClientDashboard() {
               />
             </svg>
             <span>Mes factures</span>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

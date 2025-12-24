@@ -1,4 +1,5 @@
 import './Legal.css';
+import { Link } from 'react-router-dom';
 
 export function MentionsLegales() {
   return (
@@ -64,9 +65,9 @@ export function MentionsLegales() {
           <p>
             FOX-REVIEWS s'engage à protéger la confidentialité des données personnelles collectées 
             sur son site. Pour plus d'informations, veuillez consulter notre{' '}
-            <a href="/politique-confidentialite" className="legal-link">
+            <Link to="/politique-confidentialite" className="legal-link">
               Politique de confidentialité
-            </a>.
+            </Link>.
           </p>
           <p>
             Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi 
@@ -137,7 +138,9 @@ export function MentionsLegales() {
             <li>Par email : contact@fox-reviews.fr</li>
             <li>Par téléphone : +33 1 23 45 67 89</li>
             <li>Par courrier : FOX-REVIEWS SAS, 123 Avenue de la République, 75011 Paris</li>
-            <li>Via notre <a href="/contact" className="legal-link">formulaire de contact</a></li>
+            <li>
+              Via notre <Link to="/contact" className="legal-link">formulaire de contact</Link>
+            </li>
           </ul>
         </section>
 

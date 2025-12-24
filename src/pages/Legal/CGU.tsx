@@ -1,4 +1,5 @@
 import './Legal.css';
+import { Link } from 'react-router-dom';
 
 export function CGU() {
   return (
@@ -185,9 +186,9 @@ export function CGU() {
           <p>
             FOX-REVIEWS s'engage à respecter la réglementation en vigueur (RGPD, Loi Informatique 
             et Libertés). Pour plus d'informations, consultez notre{' '}
-            <a href="/politique-confidentialite" className="legal-link">
+            <Link to="/politique-confidentialite" className="legal-link">
               Politique de confidentialité
-            </a>.
+            </Link>.
           </p>
         </section>
 
@@ -240,7 +241,7 @@ export function CGU() {
           <ul>
             <li>Email : contact@fox-reviews.fr</li>
             <li>Téléphone : +33 1 23 45 67 89</li>
-            <li><a href="/contact" className="legal-link">Formulaire de contact</a></li>
+            <li><Link to="/contact" className="legal-link">Formulaire de contact</Link></li>
           </ul>
         </section>
 

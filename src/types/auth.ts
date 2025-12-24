@@ -5,7 +5,7 @@
 import type { UserRole } from './common';
 
 export interface LoginCredentials {
-  username: string; // Email
+  email: string; // Email
   password: string;
 }
 

@@ -5,11 +5,10 @@
 /**
  * URL de base de l'API
  * En développement, utilise le proxy Vite ('/api' sera redirigé vers le backend)
- * En production, utilise la variable d'environnement VITE_API_URL
+ * En production, utilise le reverse proxy sur le même domaine (appel relatif '/api')
+ * Optionnel: override via VITE_API_URL si ton hébergement ne supporte pas le reverse proxy.
  */
-export const API_BASE_URL = 
-  import.meta.env.VITE_API_URL ?? 
-  (import.meta.env.DEV ? '/api' : 'http://135.125.74.206:8003/api');
+export const API_BASE_URL = 'https://api.fox-reviews.com/api/';
 
 /**
  * Timeout par défaut pour les requêtes API (en millisecondes)

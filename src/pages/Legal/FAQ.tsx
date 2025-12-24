@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './Legal.css';
+import { Link } from 'react-router-dom';
 
 interface FAQItem {
   id: number;
@@ -194,9 +195,9 @@ export function FAQ() {
         <div className="faq-cta">
           <h2>Vous ne trouvez pas de réponse ?</h2>
           <p>Notre équipe est là pour vous aider</p>
-          <a href="/contact" className="btn btn-primary">
+          <Link to="/contact" className="btn btn-primary">
             Contactez-nous
-          </a>
+          </Link>
         </div>
       </div>
     </div>

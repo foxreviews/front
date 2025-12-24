@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2, CheckCircle2, ArrowLeft, Info } from 'lucide-react';
 
 export function ForgotPassword() {
+  const location = useLocation();
+  const nextPath = new URLSearchParams(location.search).get('next');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -69,7 +71,7 @@ export function ForgotPassword() {
                 </Alert>
                 
                 <Button asChild className="w-full" variant="outline">
-                  <Link to="/login">
+                  <Link to={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Retour à la connexion
                   </Link>
@@ -114,7 +116,7 @@ export function ForgotPassword() {
                 </Button>
 
                 <Button asChild variant="ghost" className="w-full">
-                  <Link to="/login">
+                  <Link to={nextPath ? `/login?next=${encodeURIComponent(nextPath)}` : '/login'}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Retour à la connexion
                   </Link>
