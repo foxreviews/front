@@ -1,7 +1,12 @@
 import { useDashboard } from '../../hooks';
 import { useAuth } from '../../hooks';
 import { Link } from 'react-router-dom';
-import './ClientDashboard.css';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 export function ClientDashboard() {
   const { user } = useAuth();
@@ -9,42 +14,84 @@ export function ClientDashboard() {
 
   if (loading) {
     return (
-      <div className="dashboard-container">
-        <div className="loading-state">
-          <div className="spinner-large"></div>
-          <p>Chargement du tableau de bord...</p>
+      <div className="mx-auto w-full max-w-6xl p-4 space-y-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <Skeleton className="h-9 w-9 rounded-md" />
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader className="space-y-2">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-9 w-44 rounded-md" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="space-y-2">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-6 w-16 rounded-md" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-7 w-44" />
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-9 w-40 rounded-md" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-container">
-        <div className="error-state">
-          <svg className="error-icon-large" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <h2>Erreur de chargement</h2>
-          <p>{error}</p>
-          <button onClick={refresh} className="btn-secondary">
-            Réessayer
-          </button>
-        </div>
+      <div className="mx-auto w-full max-w-6xl p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Erreur de chargement</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+            <Button variant="secondary" onClick={refresh}>
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!dashboard) {
     return (
-      <div className="dashboard-container">
-        <div className="empty-state">
-          <p>Aucune donnée disponible</p>
-        </div>
+      <div className="mx-auto w-full max-w-6xl p-4">
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Aucune donnée disponible
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -54,14 +101,19 @@ export function ClientDashboard() {
   const statusClass = sponsorisation?.statut_paiement || 'inactive';
 
   return (
-    <div className="dashboard-container">
-      {/* Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Tableau de bord</h1>
-          <p className="dashboard-subtitle">{entreprise.nom}</p>
+    <div className="mx-auto w-full max-w-6xl p-4 space-y-6">
+      <div className="flex items-start justify-between gap-3 rounded-xl border border-border/50 bg-muted/20 p-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold leading-tight">Tableau de bord</h1>
+          <p className="text-sm text-muted-foreground">{entreprise.nom}</p>
         </div>
-        <button onClick={refresh} className="btn-icon" title="Actualiser">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={refresh}
+          aria-label="Actualiser"
+          className="border-border/60 bg-background/60 hover:bg-muted/30"
+        >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -70,234 +122,174 @@ export function ClientDashboard() {
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>
-        </button>
+        </Button>
       </div>
 
-      {/* Status Cards */}
-      <div className="status-cards">
-        {/* Statut Abonnement */}
-        <div className="status-card">
-          <div className="status-card-header">
-            <h3>Statut Abonnement</h3>
-            <span className={`status-badge status-${statusClass}`}>
-              {getStatusLabel(statusClass)}
-            </span>
-          </div>
-          <div className="status-card-body">
-            <p className="status-value">
-              {sponsorisation ? 
-                `${formatCurrency(sponsorisation.montant_mensuel)}/mois` : 
-                'Aucun abonnement actif'}
-            </p>
-            {sponsorisation && (
-              <p className="status-details">
-                Du {formatDate(sponsorisation.date_debut)} au {formatDate(sponsorisation.date_fin)}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="relative overflow-hidden border-border/60">
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent" />
+          <CardHeader className="relative space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Statut Abonnement</CardTitle>
+              <Badge
+                variant={statusClass === 'active' ? 'default' : 'secondary'}
+                className={
+                  statusClass === 'active'
+                    ? undefined
+                    : 'border border-border/60 bg-background/60 text-foreground'
+                }
+              >
+                {getStatusLabel(statusClass)}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="relative space-y-3">
+            <div>
+              <p className="text-lg font-semibold">
+                {sponsorisation
+                  ? `${formatCurrency(sponsorisation.montant_mensuel)}/mois`
+                  : 'Aucun abonnement actif'}
               </p>
-            )}
-          </div>
-          <div className="status-card-actions">
-            <Link to="/client/billing" className="btn-outline">
-              Gérer mon abonnement
-            </Link>
-          </div>
-        </div>
+              {sponsorisation && (
+                <p className="text-sm text-muted-foreground">
+                  Du {formatDate(sponsorisation.date_debut)} au {formatDate(sponsorisation.date_fin)}
+                </p>
+              )}
+            </div>
 
-        {/* Statut Sponsorisation */}
-        <div className="status-card">
-          <div className="status-card-header">
-            <h3>Statut Sponsorisation</h3>
-            <div className="toggle-wrapper">
-              <span className={`toggle-label ${isSponsored ? 'active' : ''}`}>
+            <Button variant="outline" asChild className="border-border/60 bg-background/60 hover:bg-muted/30">
+              <Link to="/client/billing">Gérer mon abonnement</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-border/60">
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent" />
+          <CardHeader className="relative space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Statut Sponsorisation</CardTitle>
+              <Badge
+                variant={isSponsored ? 'default' : 'secondary'}
+                className={isSponsored ? undefined : 'border border-border/60 bg-background/60 text-foreground'}
+              >
                 {isSponsored ? 'ON' : 'OFF'}
-              </span>
-              <div className={`toggle ${isSponsored ? 'toggle-on' : 'toggle-off'}`}>
-                <div className="toggle-slider"></div>
-              </div>
+              </Badge>
             </div>
-          </div>
-          <div className="status-card-body">
-            <p className="status-value">
-              {isSponsored ? 'Sponsorisation active' : 'Non sponsorisé'}
-            </p>
-            {isSponsored && sponsorisation && (
-              <p className="status-details">
-                Position dans la rotation : #{statistiques.rotation_position}
+          </CardHeader>
+          <CardContent className="relative space-y-3">
+            <div>
+              <p className="text-lg font-semibold">
+                {isSponsored ? 'Sponsorisation active' : 'Non sponsorisé'}
               </p>
-            )}
-          </div>
-          <div className="status-card-actions">
+              {isSponsored && sponsorisation && (
+                <p className="text-sm text-muted-foreground">
+                  Apparition estimée dans le Top 20 : {Math.round(statistiques.rotation_position)}%
+                </p>
+              )}
+            </div>
+
             {!isSponsored && (
-              <Link to="/client/sponsorship" className="btn-primary">
-                Passer en sponsorisé
-              </Link>
+              <Button asChild>
+                <Link to="/sponsorisation/abonnement">Passer en sponsorisé</Link>
+              </Button>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Statistiques */}
-      <div className="stats-section">
-        <h2 className="section-title">Statistiques</h2>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon stat-icon-blue">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Impressions</p>
-              <p className="stat-value">{formatNumber(statistiques.impressions_totales)}</p>
-            </div>
+      <Card className="relative overflow-hidden border-border/60">
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent" />
+        <CardHeader className="relative">
+          <CardTitle className="text-base">Statistiques</CardTitle>
+        </CardHeader>
+        <CardContent className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+            <p className="text-xs text-muted-foreground">Vues</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{formatNumber(statistiques.impressions_totales)}</p>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon stat-icon-green">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
-                />
-              </svg>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Clics</p>
-              <p className="stat-value">{formatNumber(statistiques.clicks_totaux)}</p>
-            </div>
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+            <p className="text-xs text-muted-foreground">Clics</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{formatNumber(statistiques.clicks_totaux)}</p>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon stat-icon-purple">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Taux de clic</p>
-              <p className="stat-value">{(statistiques.taux_clic * 100).toFixed(2)}%</p>
-            </div>
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+            <p className="text-xs text-muted-foreground">Taux de clic</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{(statistiques.taux_clic * 100).toFixed(2)}%</p>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon stat-icon-orange">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Position</p>
-              <p className="stat-value">#{statistiques.rotation_position}</p>
-              <p className="stat-sublabel">Dans la rotation</p>
-            </div>
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+            <p className="text-xs text-muted-foreground">Top 20 (estim.)</p>
+            <p className="mt-1 text-lg font-semibold text-primary">{Math.round(statistiques.rotation_position)}%</p>
+            <p className="text-xs text-muted-foreground">Probabilité d'apparition</p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Avis Récents */}
-      <div className="avis-section">
-        <div className="section-header">
-          <h2 className="section-title">Avis Récents</h2>
-          <Link to="/client/avis" className="link-primary">
-            Voir tous les avis →
-          </Link>
-        </div>
-
-        {avis_recents.length === 0 ? (
-          <div className="empty-avis">
-            <p>Aucun avis disponible</p>
-            <Link to="/client/upload-avis" className="btn-primary">
-              Ajouter un avis
-            </Link>
+      <Card className="relative overflow-hidden border-border/60">
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent" />
+        <CardHeader className="relative space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-base">Avis récents</CardTitle>
+            <Button variant="link" className="px-0" asChild>
+              <Link to="/client/avis">Voir tous les avis →</Link>
+            </Button>
           </div>
-        ) : (
-          <div className="avis-list">
-            {avis_recents.map((avis) => (
-              <div key={avis.id} className="avis-card">
-                <div className="avis-header">
-                  <span className={`avis-source avis-source-${avis.source}`}>
-                    {avis.source}
-                  </span>
-                  <span className="avis-date">{formatDate(avis.created_at)}</span>
+          <Separator />
+        </CardHeader>
+        <CardContent className="relative">
+          {avis_recents.length === 0 ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Aucun avis disponible</p>
+              <Button asChild>
+                <Link to="/client/upload-avis">Ajouter un avis</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {avis_recents.map((avis) => (
+                <div
+                  key={avis.id}
+                  className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-2 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Badge variant="outline" className="border-border/60 bg-background/60">
+                      {avis.source}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">{formatDate(avis.created_at)}</span>
+                  </div>
+                  <p className="text-sm leading-relaxed">{truncateText(avis.texte_decrypte, 150)}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      Confiance: {(avis.confidence_score * 100).toFixed(0)}%
+                    </span>
+                    <Button variant="link" className="px-0" asChild>
+                      <Link to={`/client/avis/${avis.id}`}>Voir détails</Link>
+                    </Button>
+                  </div>
                 </div>
-                <p className="avis-text">{truncateText(avis.texte_decrypte, 150)}</p>
-                <div className="avis-footer">
-                  <span className="avis-confidence">
-                    Confiance: {(avis.confidence_score * 100).toFixed(0)}%
-                  </span>
-                  <Link to={`/client/avis/${avis.id}`} className="link-secondary">
-                    Voir détails
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <h2 className="section-title">Actions Rapides</h2>
-        <div className="actions-grid">
-          <Link to="/client/entreprise" className="action-card">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
-            <span>Modifier ma fiche</span>
-          </Link>
-          
-          <Link to="/client/upload-avis" className="action-card">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              />
-            </svg>
-            <span>Uploader un avis</span>
-          </Link>
-          
-          <Link to="/client/billing" className="action-card">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <span>Mes factures</span>
-          </Link>
-        </div>
-      </div>
+      <Card className="border-border/60">
+        <CardHeader>
+          <CardTitle className="text-base">Actions rapides</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-2 sm:grid-cols-3">
+          <Button variant="outline" asChild className="border-border/60 bg-background/60 hover:bg-muted/30">
+            <Link to="/client/entreprise">Modifier ma fiche</Link>
+          </Button>
+          <Button variant="outline" asChild className="border-border/60 bg-background/60 hover:bg-muted/30">
+            <Link to="/client/upload-avis">Uploader un avis</Link>
+          </Button>
+          <Button variant="outline" asChild className="border-border/60 bg-background/60 hover:bg-muted/30">
+            <Link to="/client/billing">Mes factures</Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -309,6 +301,7 @@ function getStatusLabel(status: string): string {
     past_due: 'En retard',
     canceled: 'Résilié',
     inactive: 'Inactif',
+    none: 'Aucun',
   };
   return labels[status] || status;
 }

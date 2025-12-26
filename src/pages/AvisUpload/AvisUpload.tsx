@@ -1,13 +1,22 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth, useAvis } from '../../hooks';
+import { useAuth, useAvis, useDashboard } from '../../hooks';
 import type { AvisStatus } from '../../types/client';
-import './AvisUpload.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 
 export function AvisUpload() {
   const { user } = useAuth();
+  const entrepriseId = user?.entreprise_id || null;
+  const { dashboard, loading: dashboardLoading } = useDashboard(entrepriseId);
+  const hasActiveSubscription = !!dashboard?.sponsorisation?.is_active;
+  const isGated = !dashboardLoading && dashboard != null && !hasActiveSubscription;
+
   const { avis, loading, error, uploading, uploadAvis, refresh } = useAvis(
-    user?.entreprise_id || null
+    hasActiveSubscription ? entrepriseId : null
   );
 
   const [texteAvis, setTexteAvis] = useState('');
@@ -52,227 +61,180 @@ export function AvisUpload() {
   const displayError = localError || error;
 
   return (
-    <div className="avis-upload-container">
-      <div className="avis-upload-header">
-        <div>
-          <h1 className="page-title">Upload d'avis de remplacement</h1>
-          <p className="page-subtitle">
-            Remplacez votre avis actuel en uploadant un nouveau contenu
+    <div className="mx-auto w-full max-w-6xl p-4 space-y-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold leading-tight">Upload d'avis de remplacement</h1>
+          <p className="text-sm text-muted-foreground">
+            Remplacez votre avis actuel en envoyant un nouveau contenu
           </p>
         </div>
-        <Link to="/client/dashboard" className="btn-outline">
-          ← Retour au tableau de bord
-        </Link>
+        <Button variant="outline" asChild>
+          <Link to="/client/dashboard">← Retour</Link>
+        </Button>
       </div>
 
       {successMessage && (
-        <div className="success-banner" role="alert">
-          <svg className="success-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{successMessage}</span>
-        </div>
+        <Alert>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
       )}
 
       {displayError && (
-        <div className="error-banner" role="alert">
-          <svg className="error-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{displayError}</span>
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{displayError}</AlertDescription>
+        </Alert>
       )}
 
-      <div className="avis-content">
-        {/* Upload Form */}
-        <div className="upload-section">
-          <div className="upload-card">
-            <div className="upload-header">
-              <svg className="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-              <h2 className="card-title">Nouvel avis</h2>
-              <p className="card-subtitle">
-                Fournissez un avis authentique qui représente bien votre entreprise
-              </p>
-            </div>
+      {!dashboardLoading && dashboard && !hasActiveSubscription && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            La gestion des avis est disponible uniquement après le démarrage de votre abonnement.
+            <Button asChild className="ml-2" variant="secondary">
+              <Link to="/client/billing">Voir mes abonnements</Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
-            <form onSubmit={handleSubmit} className="upload-form">
-              <div className="form-group">
-                <label htmlFor="texte_avis" className="form-label">
-                  Texte de l'avis <span className="required">*</span>
-                </label>
+      {dashboardLoading ? (
+        <p className="text-sm text-muted-foreground">Chargement de votre abonnement…</p>
+      ) : isGated ? null : (
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Nouvel avis</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Fournissez un avis authentique qui représente bien votre entreprise.
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="texte_avis">Texte de l'avis</Label>
+                  <span
+                    className={
+                      characterCount === 0
+                        ? 'text-xs text-muted-foreground'
+                        : characterCount >= minCharacters
+                          ? 'text-xs text-muted-foreground'
+                          : 'text-xs text-destructive'
+                    }
+                  >
+                    {characterCount} / {minCharacters}
+                  </span>
+                </div>
                 <textarea
                   id="texte_avis"
                   rows={8}
                   disabled={uploading}
                   value={texteAvis}
                   onChange={(e) => setTexteAvis(e.target.value)}
-                  className={`form-textarea ${!isValid && characterCount > 0 ? 'invalid' : ''}`}
-                  placeholder="Notre entreprise offre des services de qualité depuis 2010. Nos clients apprécient notre réactivité et notre expertise technique..."
+                  className={
+                    `w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm ` +
+                    `placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 ` +
+                    `focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ` +
+                    `${!isValid && characterCount > 0 ? 'border-destructive' : ''}`
+                  }
+                  placeholder="Notre entreprise offre des services de qualité depuis 2010..."
                 />
-                <div className="character-counter">
-                  <span className={characterCount >= minCharacters ? 'valid' : 'invalid'}>
-                    {characterCount} / {minCharacters} caractères minimum
-                  </span>
-                </div>
+                <p className="text-xs text-muted-foreground">Minimum {minCharacters} caractères.</p>
               </div>
 
-              <div className="info-box">
-                <svg className="info-icon" fill="currentColor" viewBox="0 0 20 20">
+              <div className="rounded-md border p-3 text-sm">
+                <p className="font-medium">Conseils</p>
+                <ul className="mt-2 list-disc pl-5 text-muted-foreground space-y-1">
+                  <li>Décrivez vos services et votre expertise</li>
+                  <li>Mentionnez vos points forts et valeurs</li>
+                  <li>Restez authentique et professionnel</li>
+                </ul>
+              </div>
+
+              <Button type="submit" disabled={uploading || !isValid} className="w-full">
+                {uploading ? 'Traitement en cours…' : "Envoyer l'avis"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Historique</CardTitle>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={refresh}
+                disabled={loading}
+                aria-label="Actualiser l'historique"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                <div>
-                  <strong>Conseils pour un bon avis :</strong>
-                  <ul>
-                    <li>Décrivez vos services et votre expertise</li>
-                    <li>Mentionnez vos points forts et valeurs</li>
-                    <li>Restez authentique et professionnel</li>
-                    <li>Minimum 50 caractères requis</li>
-                  </ul>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={uploading || !isValid}
-                className="btn-primary btn-block"
-              >
-                {uploading ? (
-                  <span className="btn-loading">
-                    <svg className="spinner" viewBox="0 0 24 24">
-                      <circle
-                        className="spinner-circle"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                    </svg>
-                    Traitement en cours...
-                  </span>
-                ) : (
-                  <>
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
-                    </svg>
-                    Envoyer l'avis
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Historique des avis */}
-        <div className="history-section">
-          <div className="section-header">
-            <h2 className="section-title">Historique des avis</h2>
-            <button onClick={refresh} className="btn-icon" disabled={loading}>
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {loading && avis.length === 0 ? (
-            <div className="loading-state">
-              <div className="spinner-large"></div>
-              <p>Chargement de l'historique...</p>
+              </Button>
             </div>
-          ) : avis.length === 0 ? (
-            <div className="empty-state">
-              <svg className="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <p>Aucun avis envoyé pour le moment</p>
-            </div>
-          ) : (
-            <div className="avis-history-list">
-              {avis.map((avisItem, index) => {
-                // AvisDecrypte n'a pas de status, on utilise needs_regeneration pour déterminer un statut
-                const status: AvisStatus = avisItem.needs_regeneration ? 'pending' : 'validated';
-                const statusInfo = getStatusBadge(status);
-                return (
-                  <div key={avisItem.id || index} className="avis-history-card">
-                    <div className="avis-history-header">
-                      <div className="avis-meta">
-                        <span className={`avis-status ${statusInfo.class}`}>
-                          {statusInfo.label}
-                        </span>
-                        <span className="avis-date">
+          </CardHeader>
+          <CardContent>
+            {loading && avis.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Chargement…</p>
+            ) : avis.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun avis envoyé pour le moment.</p>
+            ) : (
+              <div className="space-y-3">
+                {avis.map((avisItem, index) => {
+                  const status: AvisStatus = avisItem.needs_regeneration ? 'pending' : 'validated';
+                  const statusInfo = getStatusBadge(status);
+                  return (
+                    <div key={avisItem.id || index} className="rounded-md border p-3 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={status === 'validated' ? 'default' : 'secondary'}>
+                            {statusInfo.label}
+                          </Badge>
+                          <Badge variant="outline">{avisItem.source}</Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
                           {new Date(avisItem.created_at).toLocaleDateString('fr-FR', {
                             year: 'numeric',
-                            month: 'long',
+                            month: 'short',
                             day: 'numeric',
                           })}
                         </span>
                       </div>
-                      <span className={`avis-source avis-source-${avisItem.source}`}>
-                        {avisItem.source}
-                      </span>
-                    </div>
 
-                    <div className="avis-history-body">
-                      <div className="avis-section">
-                        <h4 className="avis-section-title">Texte original</h4>
-                        <p className="avis-text">{avisItem.texte_brut}</p>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Texte original</p>
+                          <p className="text-sm leading-relaxed">{avisItem.texte_brut}</p>
+                        </div>
+
+                        {avisItem.texte_decrypte && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">Texte décrypté (IA)</p>
+                            <p className="text-sm leading-relaxed">{avisItem.texte_decrypte}</p>
+                          </div>
+                        )}
                       </div>
 
-                      {avisItem.texte_decrypte && (
-                        <div className="avis-section">
-                          <h4 className="avis-section-title">Texte décrypté (IA)</h4>
-                          <p className="avis-text avis-decrypted">{avisItem.texte_decrypte}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="avis-history-footer">
-                      <span className="avis-confidence">
+                      <p className="text-xs text-muted-foreground">
                         Score de confiance: {(avisItem.confidence_score * 100).toFixed(0)}%
-                      </span>
+                      </p>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+      )}
     </div>
   );
 }

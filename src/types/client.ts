@@ -83,6 +83,11 @@ export interface Dashboard {
   } | null;
   statistiques: DashboardStatistiques;
   avis_recents: AvisDecrypte[];
+  /**
+   * Indique si le client est éligible à une montée en gamme (ex: sponsorisation)
+   * Fourni par certains backends.
+   */
+  can_upgrade?: boolean;
 }
 
 export interface AvisDecrypte {

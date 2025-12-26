@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks";
 
 export default function Header() {
+  const headerRef = useRef<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("Accueil");
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const dropdownCloseTimerRef = useRef<number | null>(null);
   const { isAuthenticated } = useAuth();
 
   const { pathname } = useLocation();
@@ -41,12 +43,28 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /** 
+  /**
    * Header est "solid" si :
    * - pas sur la home
    * - OU scrollé
    */
   const isSolidHeader = !isHome || scrolled;
+
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    const applyOffset = () => {
+      const height = el.getBoundingClientRect().height;
+      // "+5%" under the bottom of the navbar header.
+      const offset = Math.ceil(height * 1.05);
+      document.documentElement.style.setProperty("--app-header-offset", `${offset}px`);
+    };
+
+    applyOffset();
+    window.addEventListener("resize", applyOffset);
+    return () => window.removeEventListener("resize", applyOffset);
+  }, [isSolidHeader]);
 
   const renderLink = (
     link: { label: string; href: string },
@@ -123,19 +141,48 @@ export default function Header() {
 
     // Desktop: Dropdown
     const isOpen = dropdownOpen === label;
+
+    const cancelScheduledClose = () => {
+      if (dropdownCloseTimerRef.current != null) {
+        window.clearTimeout(dropdownCloseTimerRef.current);
+        dropdownCloseTimerRef.current = null;
+      }
+    };
+
+    const scheduleClose = () => {
+      cancelScheduledClose();
+      dropdownCloseTimerRef.current = window.setTimeout(() => {
+        setDropdownOpen((current) => (current === label ? null : current));
+      }, 120);
+    };
     
     return (
       <div
         key={label}
         className="relative"
-        onMouseEnter={() => setDropdownOpen(label)}
-        onMouseLeave={() => setDropdownOpen(null)}
       >
         <button
+          type="button"
           className={`
             px-6 py-2 cursor-pointer transition-colors flex items-center gap-2
             ${baseColor} hover:text-orange-500
           `}
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
+          onMouseEnter={() => {
+            cancelScheduledClose();
+            setDropdownOpen(label);
+          }}
+          onMouseLeave={scheduleClose}
+          onFocus={() => {
+            cancelScheduledClose();
+            setDropdownOpen(label);
+          }}
+          onBlur={scheduleClose}
+          onClick={() => {
+            cancelScheduledClose();
+            setDropdownOpen((current) => (current === label ? null : label));
+          }}
         >
           {label}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +190,12 @@ export default function Header() {
           </svg>
         </button>
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50">
+          <div
+            className="absolute top-full left-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50"
+            role="menu"
+            onMouseEnter={cancelScheduledClose}
+            onMouseLeave={scheduleClose}
+          >
             {links.map((link) => {
               const isExternal = link.href.startsWith("http") || link.href.startsWith("mailto:");
               const isInternal = link.href.startsWith("/") && !isExternal;
@@ -155,7 +207,11 @@ export default function Header() {
                   <Link
                     key={link.label}
                     to={link.href}
-                    onClick={() => setActive(link.label)}
+                    onClick={() => {
+                      setActive(link.label);
+                      setDropdownOpen(null);
+                      setOpen(false);
+                    }}
                     className={className}
                   >
                     {link.label}
@@ -169,7 +225,11 @@ export default function Header() {
                   href={link.href}
                   target={isExternal ? "_blank" : undefined}
                   rel={isExternal ? "noopener noreferrer" : undefined}
-                  onClick={() => setActive(link.label)}
+                  onClick={() => {
+                    setActive(link.label);
+                    setDropdownOpen(null);
+                    setOpen(false);
+                  }}
                   className={className}
                 >
                   {link.label}
@@ -184,6 +244,7 @@ export default function Header() {
 
   return (
     <header
+      ref={headerRef}
       className={`
         fixed top-0 left-0 w-full z-50
         transition-colors duration-300

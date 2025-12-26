@@ -49,6 +49,7 @@ export default function Subscribe() {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsEntrepriseCompletion, setNeedsEntrepriseCompletion] = useState(false);
 
   const returnToWithAutoCheckout = useMemo(
     () => withQueryParam(location.pathname, location.search, 'autoCheckout', '1'),
@@ -87,10 +88,12 @@ export default function Subscribe() {
 
   const startCheckout = async () => {
     setError(null);
+    setNeedsEntrepriseCompletion(false);
 
     const entrepriseId = user?.entreprise_id;
     if (!entrepriseId) {
       setError("Votre compte n'est pas encore relié à une entreprise. Créez d'abord votre entreprise dans l'espace client.");
+      setNeedsEntrepriseCompletion(true);
       return;
     }
 
@@ -108,11 +111,12 @@ export default function Subscribe() {
     setProcessing(true);
 
     try {
-      const successUrl = buildStripeReturnUrl('/sponsorisation/abonnement?success=true');
-      const cancelUrl = buildStripeReturnUrl('/sponsorisation/abonnement?canceled=true');
+      const successUrl = buildStripeReturnUrl('/client/billing/success');
+      const cancelUrl = buildStripeReturnUrl('/client/billing/cancel');
 
       const { checkout_url } = await billingService.createCheckoutSession({
         pro_localisation_id: proLocalisationId,
+        duration_months: 1,
         success_url: successUrl,
         cancel_url: cancelUrl,
       });
@@ -121,6 +125,11 @@ export default function Subscribe() {
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Impossible de démarrer le paiement Stripe.';
       setError(message);
+
+      const lowered = String(message).toLowerCase();
+      if (lowered.includes('entreprise') && (lowered.includes('compl') || lowered.includes('complet'))) {
+        setNeedsEntrepriseCompletion(true);
+      }
 
       // Avoid auto-loop if we came back with autoCheckout=1
       if (autoCheckout) {
@@ -256,6 +265,31 @@ export default function Subscribe() {
             <AlertDescription>
               Paiement annulé. Vous pouvez réessayer quand vous voulez.
             </AlertDescription>
+          </Alert>
+        )}
+
+        {error && needsEntrepriseCompletion && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertDescription>
+              {error}{' '}
+              <Button
+                asChild
+                variant="secondary"
+                className="ml-2"
+              >
+                <Link
+                  to={`/client/entreprise?next=${encodeURIComponent(returnToWithAutoCheckout)}`}
+                >
+                  Compléter mon entreprise
+                </Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {error && !needsEntrepriseCompletion && (
+          <Alert className="mb-6" variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

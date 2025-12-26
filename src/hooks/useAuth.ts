@@ -18,6 +18,50 @@ export function useAuth() {
   // Initialise l'authentification au montage
   useEffect(() => {
     authService.initAuth();
+
+    // If we have a token, refresh user from API (prevents stale localStorage user without entreprise_id)
+    const token = authService.getToken();
+    if (!token) return;
+
+    const storedUser = authService.getUser();
+    const needsHydration = !storedUser || !storedUser.entreprise_id;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (needsHydration) {
+          setState((prev) => ({ ...prev, loading: true, error: null }));
+        }
+
+        const user = await authService.getCurrentUser();
+        if (cancelled) return;
+
+        setState((prev) => ({
+          ...prev,
+          isAuthenticated: true,
+          user,
+          token: authService.getToken(),
+          loading: false,
+          error: null,
+        }));
+      } catch (error) {
+        if (cancelled) return;
+        const errorMessage = error instanceof AuthError ? error.message : 'Impossible de récupérer les données utilisateur';
+        setState((prev) => ({
+          ...prev,
+          isAuthenticated: authService.isAuthenticated(),
+          user: authService.getUser(),
+          token: authService.getToken(),
+          loading: false,
+          error: errorMessage,
+        }));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /**

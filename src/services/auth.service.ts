@@ -98,7 +98,7 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<{ token: string; user: User }> {
     try {
-      const { data } = await apiClient.post<AuthToken>('/auth/login/', credentials);
+      const { data } = await apiClient.post<AuthToken>('auth/login/', credentials);
       
       if (!data.token) {
         throw new AuthError('Token non reçu du serveur', 500);
@@ -144,11 +144,29 @@ class AuthService {
         throw new AuthError('Le mot de passe doit contenir au moins 8 caractères', 400);
       }
 
+      // Règle backend: un client DOIT être lié à une entreprise existante
+      // Au moins un des 3 champs doit être fourni: entreprise_id, siren, siret
+      const hasEntrepriseLink = Boolean(
+        (data.entreprise_id && data.entreprise_id.trim()) ||
+          (data.siren && data.siren.trim()) ||
+          (data.siret && data.siret.trim())
+      );
+
+      if (!hasEntrepriseLink) {
+        throw new AuthError(
+          'Veuillez fournir un SIREN/SIRET (ou un identifiant entreprise) pour lier votre compte.',
+          400
+        );
+      }
+
       // Appel API d'inscription
-      const { data: responseData } = await apiClient.post<AuthToken>('/auth/register/', {
+      const { data: responseData } = await apiClient.post<AuthToken>('auth/register/', {
         email: data.email,
         password: data.password,
-        name: data.name,
+        ...(data.name ? { name: data.name } : {}),
+        ...(data.entreprise_id ? { entreprise_id: data.entreprise_id } : {}),
+        ...(data.siren ? { siren: data.siren } : {}),
+        ...(data.siret ? { siret: data.siret } : {}),
       });
 
       if (!responseData.token) {
@@ -166,6 +184,9 @@ class AuthService {
           detail?: string;
           email?: string[];
           password?: string[];
+          siren?: string[];
+          siret?: string[];
+          non_field_errors?: string[];
         }>;
         
         const errorData = axiosError.response?.data;
@@ -175,6 +196,12 @@ class AuthService {
           errorMessage = errorData.email[0];
         } else if (errorData?.password) {
           errorMessage = errorData.password[0];
+        } else if (errorData?.siren) {
+          errorMessage = errorData.siren[0];
+        } else if (errorData?.siret) {
+          errorMessage = errorData.siret[0];
+        } else if (errorData?.non_field_errors?.[0]) {
+          errorMessage = errorData.non_field_errors[0];
         } else if (errorData?.error || errorData?.detail) {
           errorMessage = errorData.error || errorData.detail || errorMessage;
         }
@@ -207,7 +234,7 @@ class AuthService {
         id: accountData.id,
         email: accountData.email,
         name: accountData.name,
-        is_active: accountData.is_active,
+        is_active: accountData.is_active ?? true,
         role: accountData.role,
         phone: accountData.phone,
         entreprise_id: accountData.entreprise_id,
@@ -251,7 +278,7 @@ class AuthService {
   async requestPasswordReset(request: PasswordResetRequest): Promise<PasswordResetResponse> {
     try {
       const { data } = await apiClient.post<PasswordResetResponse>(
-        '/auth/password-reset/',
+        'auth/password-reset/',
         request
       );
       return data;
@@ -288,8 +315,49 @@ class AuthService {
    */
   async getAccount(): Promise<AccountData> {
     try {
-      const { data } = await apiClient.get<AccountData>('/account/me/');
-      return data;
+      type AccountApiResponse = Partial<AccountData> & {
+        id: string | number;
+        email: string;
+        name?: string;
+        role?: AccountData['role'];
+      };
+
+      const normalize = (data: any): AccountData => {
+        // Normalisation: certains backends renvoient `entreprise_id`, d'autres un objet `entreprise`
+        const entrepriseId = data.entreprise?.id ?? data.entreprise_id;
+        const entrepriseNom = data.entreprise?.nom ?? data.entreprise_nom;
+
+        return {
+          id: data.id,
+          email: data.email,
+          name: data.name ?? '',
+          role: (data.role ?? 'CLIENT') as AccountData['role'],
+          is_active: data.is_active,
+          phone: data.phone,
+          entreprise_id: entrepriseId,
+          entreprise_nom: entrepriseNom,
+          entreprise: data.entreprise,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        };
+      };
+
+      // Try the most common "me" endpoints in order.
+      const candidates = ['auth/account/', 'me/', 'account/me/', 'auth/me/'];
+      let lastError: unknown;
+
+      for (const url of candidates) {
+        try {
+          const { data } = await apiClient.get<AccountApiResponse>(url);
+          return normalize(data);
+        } catch (error: any) {
+          lastError = error;
+          if (error?.response?.status === 404) continue;
+          throw error;
+        }
+      }
+
+      throw lastError;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
@@ -309,7 +377,7 @@ class AuthService {
   async updateAccount(updateData: AccountUpdateData): Promise<AccountData> {
     try {
       const { data } = await apiClient.put<AccountData>(
-        '/account/update/',
+        'account/update/',
         updateData
       );
       

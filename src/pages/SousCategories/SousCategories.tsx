@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { referenceService } from '../../services/reference.service';
 import type { SousCategorie, Categorie } from '../../types/reference';
+import { SEO } from '../../components/SEO';
 import './SousCategories.css';
 
 export function SousCategories() {
@@ -70,7 +71,7 @@ export function SousCategories() {
   }, [currentPage]);
 
   const handleSousCategorieClick = (sousCategorie: SousCategorie) => {
-    navigate(`/search?sousCategorie=${sousCategorie.slug}`);
+    navigate(`/search?sous_categorie=${sousCategorie.slug}`);
   };
 
   const handlePageChange = (page: number) => {
@@ -157,6 +158,15 @@ export function SousCategories() {
 
   return (
     <div className="sous-categories-container">
+      <SEO
+        title={categoryName ? `Sous-catégories - ${categoryName}` : 'Toutes les sous-catégories'}
+        description={
+          categoryName
+            ? `Découvrez les sous-catégories disponibles pour ${categoryName} et trouvez les meilleurs professionnels grâce aux avis 5★ certifiés.`
+            : 'Découvrez toutes les sous-catégories et trouvez les meilleurs professionnels grâce aux avis 5★ certifiés.'
+        }
+        keywords={categoryName ? `${categoryName}, sous-catégories, annuaire, avis` : 'sous-catégories, annuaire, avis, professionnels'}
+      />
       {/* Header */}
       <div className="sous-categories-header">
         <h1 className="page-title">

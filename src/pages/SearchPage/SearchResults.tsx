@@ -2,6 +2,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useSearch } from "../../hooks";
 import SearchBar from "../../components/search/SearchBar";
 import SkeletonCard from "../../components/skeleton/Skeleton";
+import { SearchSEO } from "../../components/SEO";
 
 export default function SearchResults() {
   const [params] = useSearchParams();
@@ -20,13 +21,36 @@ export default function SearchResults() {
   });
 
   const MAX_RESULTS = 15;
+  const MAX_SPONSORED = 5;
 
   const sponsoredResults = data?.sponsored ?? [];
   const organicResults = data?.organic ?? [];
-  const sponsoredToShow = sponsoredResults.slice(0, MAX_RESULTS);
+  const sponsoredToShow = sponsoredResults.slice(0, MAX_SPONSORED);
   const remainingSlots = MAX_RESULTS - sponsoredToShow.length;
   const organicToShow = remainingSlots > 0 ? organicResults.slice(0, remainingSlots) : [];
   const displayedCount = sponsoredToShow.length + organicToShow.length;
+
+  const getEntrepriseSeoPath = (item: any): string | null => {
+    const categorieSlug = item?.categorie;
+    const sousCategorieSlug = item?.sous_categorie;
+    const villeSlug = item?.ville;
+    const entrepriseSlugOrName = item?.slug || item?.entreprise_nom || item?.nom;
+
+    if (!categorieSlug || !sousCategorieSlug || !villeSlug || !entrepriseSlugOrName) {
+      return null;
+    }
+
+    return `/${encodeURIComponent(String(categorieSlug))}/${encodeURIComponent(
+      String(sousCategorieSlug)
+    )}/ville/${encodeURIComponent(String(villeSlug))}/${encodeURIComponent(
+      String(entrepriseSlugOrName)
+    )}`;
+  };
+
+  const openEntreprise = (item: any) => {
+    const seoPath = getEntrepriseSeoPath(item);
+    navigate(seoPath || `/entreprise/${item.id}`);
+  };
 
   const handleSearch = (filters: {
   categorie?: string;
@@ -52,6 +76,7 @@ export default function SearchResults() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <SearchSEO categorie={categorie} ville={ville} />
       {/* Hero Section with Search */}
       <div className="bg-gradient-to-r from-[#26354e] to-[#374d6d] pt-28 pb-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-24">
@@ -172,7 +197,10 @@ export default function SearchResults() {
                           {item.avis_redaction}
                         </p>
                       )}
-                      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors">
+                      <button
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors"
+                        onClick={() => openEntreprise(item)}
+                      >
                         Voir le profil
                       </button>
                     </article>
@@ -237,7 +265,7 @@ export default function SearchResults() {
                       </div>
                       <button
                         className="bg-[#26354e] hover:bg-[#374d6d] text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap"
-                        onClick={() => navigate(`/pro/${item.id}`)}
+                        onClick={() => openEntreprise(item)}
                       >
                         Voir détails
                       </button>

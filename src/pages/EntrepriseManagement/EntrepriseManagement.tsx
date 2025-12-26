@@ -1,14 +1,37 @@
-import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth, useEntreprise } from '../../hooks';
+import { useMemo, useState, type FormEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth, useEntreprise, useAvis } from '../../hooks';
 import type { EntrepriseUpdateData } from '../../types/client';
-import './EntrepriseManagement.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function EntrepriseManagement() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { entreprise, loading, error, updating, updateEntreprise, refresh } = useEntreprise(
     user?.entreprise_id || null
   );
+
+  const nextPath = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next');
+    if (!next) return null;
+    // Safety: only allow internal navigation
+    if (!next.startsWith('/')) return null;
+    return next;
+  }, [location.search]);
+
+  const {
+    avis,
+    loading: avisLoading,
+    error: avisError,
+    refresh: refreshAvis,
+  } = useAvis(user?.entreprise_id || null);
 
   const [formData, setFormData] = useState<EntrepriseUpdateData>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -43,6 +66,10 @@ export function EntrepriseManagement() {
 
     if (success) {
       setSuccessMessage('Les informations ont été mises à jour avec succès');
+      if (nextPath) {
+        navigate(nextPath);
+        return;
+      }
       // Auto-masquer le message après 5 secondes
       setTimeout(() => setSuccessMessage(null), 5000);
     }
@@ -70,42 +97,44 @@ export function EntrepriseManagement() {
 
   if (loading) {
     return (
-      <div className="entreprise-container">
-        <div className="loading-state">
-          <div className="spinner-large"></div>
-          <p>Chargement des informations...</p>
-        </div>
+      <div className="mx-auto w-full max-w-5xl p-4">
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Chargement des informations…
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error && !entreprise) {
     return (
-      <div className="entreprise-container">
-        <div className="error-state">
-          <svg className="error-icon-large" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <h2>Erreur de chargement</h2>
-          <p>{error}</p>
-          <button onClick={refresh} className="btn-secondary">
-            Réessayer
-          </button>
-        </div>
+      <div className="mx-auto w-full max-w-5xl p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Erreur de chargement</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+            <Button variant="secondary" onClick={refresh}>
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!entreprise) {
     return (
-      <div className="entreprise-container">
-        <div className="empty-state">
-          <p>Aucune entreprise associée à votre compte</p>
-        </div>
+      <div className="mx-auto w-full max-w-5xl p-4">
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            Aucune entreprise associée à votre compte
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -117,253 +146,289 @@ export function EntrepriseManagement() {
 
   const displayError = localError || error;
 
+  const latestAvis = avis?.[0];
+
   return (
-    <div className="entreprise-container">
-      <div className="entreprise-header">
-        <div>
-          <h1 className="page-title">Gestion de la fiche entreprise</h1>
-          <p className="page-subtitle">Modifiez les informations de votre entreprise</p>
+    <div className="mx-auto w-full max-w-6xl p-4 space-y-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold leading-tight">Fiche entreprise</h1>
+            <Badge>Profil</Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Mettez à jour vos informations publiques et préparez la sponsorisation.
+          </p>
         </div>
-        <Link to="/client/dashboard" className="btn-outline">
-          ← Retour au tableau de bord
-        </Link>
+        <Button variant="outline" asChild>
+          <Link to="/client/dashboard">← Retour</Link>
+        </Button>
       </div>
 
       {successMessage && (
-        <div className="success-banner" role="alert">
-          <svg className="success-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{successMessage}</span>
-        </div>
+        <Alert>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
       )}
 
       {displayError && (
-        <div className="error-banner" role="alert">
-          <svg className="error-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{displayError}</span>
+        <Alert variant="destructive">
+          <AlertDescription>{displayError}</AlertDescription>
+        </Alert>
+      )}
+
+      {nextPath && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold">Finaliser votre profil</div>
+              <div className="text-sm text-muted-foreground">
+                Complétez cette page puis vous serez renvoyé automatiquement vers la souscription.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={handleCancel} disabled={updating}>
+                Réinitialiser
+              </Button>
+              <Button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                Voir les champs
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="entreprise-content">
-        {/* Informations non modifiables */}
-        <div className="info-card">
-          <h2 className="card-title">Informations officielles</h2>
-          <p className="card-subtitle">Ces informations proviennent de l'INSEE et ne peuvent pas être modifiées</p>
-          
-          <div className="info-grid">
-            <div className="info-item">
-              <label className="info-label">Raison sociale</label>
-              <p className="info-value">{entreprise.nom}</p>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          <Card>
+            <CardHeader className="space-y-2">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <CardTitle className="text-base">Informations officielles</CardTitle>
+                  <p className="text-sm text-muted-foreground">Données INSEE (non modifiables)</p>
+                </div>
+                <Badge variant="outline">SIREN {entreprise.siren}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <p className="text-xs text-muted-foreground">Raison sociale</p>
+              <p className="text-sm font-medium">{entreprise.nom}</p>
             </div>
-            
-            <div className="info-item">
-              <label className="info-label">SIREN</label>
-              <p className="info-value">{entreprise.siren}</p>
+            <div>
+              <p className="text-xs text-muted-foreground">SIREN</p>
+              <p className="text-sm font-medium">{entreprise.siren}</p>
             </div>
-            
-            <div className="info-item">
-              <label className="info-label">SIRET</label>
-              <p className="info-value">{entreprise.siret}</p>
+            <div>
+              <p className="text-xs text-muted-foreground">SIRET</p>
+              <p className="text-sm font-medium">{entreprise.siret}</p>
             </div>
-            
             {entreprise.naf_code && (
-              <div className="info-item">
-                <label className="info-label">Code NAF</label>
-                <p className="info-value">
+              <div>
+                <p className="text-xs text-muted-foreground">Code NAF</p>
+                <p className="text-sm font-medium">
                   {entreprise.naf_code}
                   {entreprise.naf_libelle && ` - ${entreprise.naf_libelle}`}
                 </p>
               </div>
             )}
-          </div>
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              Ces informations proviennent de l'INSEE et ne peuvent pas être modifiées.
+            </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-base">Informations modifiables</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Ces éléments s'affichent sur votre fiche publique.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="nom_commercial">Nom commercial</Label>
+                  <Input
+                    id="nom_commercial"
+                    type="text"
+                    disabled={updating}
+                    value={formData.nom_commercial || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, nom_commercial: e.target.value }))
+                    }
+                    placeholder="Nom commercial de votre entreprise"
+                  />
+                  <p className="text-xs text-muted-foreground">Le nom sous lequel vous êtes connu du public</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telephone">Téléphone</Label>
+                  <Input
+                    id="telephone"
+                    type="tel"
+                    disabled={updating}
+                    value={formData.telephone || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, telephone: e.target.value }))
+                    }
+                    placeholder="+33 1 23 45 67 89"
+                  />
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="adresse">Adresse</Label>
+                  <Input
+                    id="adresse"
+                    type="text"
+                    disabled={updating}
+                    value={formData.adresse || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, adresse: e.target.value }))}
+                    placeholder="123 Rue de la République"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="code_postal">Code postal</Label>
+                  <Input
+                    id="code_postal"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d{5}"
+                    maxLength={5}
+                    disabled={updating}
+                    value={formData.code_postal || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        code_postal: e.target.value.replace(/\D/g, ''),
+                      }))
+                    }
+                    placeholder="75001"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ville_nom">Ville</Label>
+                  <Input
+                    id="ville_nom"
+                    type="text"
+                    disabled={updating}
+                    value={formData.ville_nom || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, ville_nom: e.target.value }))}
+                    placeholder="Paris"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email_contact">Email de contact</Label>
+                  <Input
+                    id="email_contact"
+                    type="email"
+                    disabled={updating}
+                    value={formData.email_contact || ''}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, email_contact: e.target.value }))
+                    }
+                    placeholder="contact@entreprise.com"
+                  />
+                  <p className="text-xs text-muted-foreground">Visible par les clients potentiels</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="site_web">Site web</Label>
+                  <Input
+                    id="site_web"
+                    type="url"
+                    disabled={updating}
+                    value={formData.site_web || ''}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, site_web: e.target.value }))}
+                    placeholder="https://www.entreprise.com"
+                  />
+                  <p className="text-xs text-muted-foreground">Doit commencer par http:// ou https://</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="secondary" onClick={handleCancel} disabled={updating}>
+                  Annuler
+                </Button>
+                <Button type="submit" disabled={updating}>
+                  {updating ? 'Enregistrement…' : 'Enregistrer les modifications'}
+                </Button>
+              </div>
+            </form>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Formulaire d'édition */}
-        <form onSubmit={handleSubmit} className="edit-form">
-          <h2 className="card-title">Informations modifiables</h2>
-
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="nom_commercial" className="form-label">
-                Nom commercial
-              </label>
-              <input
-                id="nom_commercial"
-                type="text"
-                disabled={updating}
-                value={formData.nom_commercial || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, nom_commercial: e.target.value }))
-                }
-                className="form-input"
-                placeholder="Nom commercial de votre entreprise"
-              />
-              <p className="form-hint">Le nom sous lequel vous êtes connu du public</p>
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base">Avis décrypté publié</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Aperçu de l'avis actuellement affiché sur votre fiche publique.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" asChild>
+                <Link to="/client/avis">Voir mes avis →</Link>
+              </Button>
+              <Button variant="secondary" onClick={refreshAvis} disabled={avisLoading}>
+                Actualiser
+              </Button>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="adresse" className="form-label">
-                Adresse
-              </label>
-              <input
-                id="adresse"
-                type="text"
-                disabled={updating}
-                value={formData.adresse || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, adresse: e.target.value }))
-                }
-                className="form-input"
-                placeholder="123 Rue de la République"
-              />
-            </div>
+            {avisError && (
+              <Alert variant="destructive">
+                <AlertDescription>{avisError}</AlertDescription>
+              </Alert>
+            )}
 
-            <div className="form-group">
-              <label htmlFor="code_postal" className="form-label">
-                Code postal
-              </label>
-              <input
-                id="code_postal"
-                type="text"
-                pattern="\d{5}"
-                maxLength={5}
-                disabled={updating}
-                value={formData.code_postal || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    code_postal: e.target.value.replace(/\D/g, ''),
-                  }))
-                }
-                className="form-input"
-                placeholder="75001"
-              />
-            </div>
+            {avisLoading && !latestAvis ? (
+              <div className="text-sm text-muted-foreground">Chargement de l’avis publié…</div>
+            ) : !latestAvis ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Aucun avis publié pour le moment.</p>
+                <Button asChild>
+                  <Link to="/client/upload-avis">Uploader un avis</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={latestAvis.needs_regeneration ? 'secondary' : 'default'}>
+                      {latestAvis.needs_regeneration ? 'En cours' : 'Publié'}
+                    </Badge>
+                    <Badge variant="outline">{latestAvis.source}</Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(latestAvis.created_at).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+                  <div className="rounded-lg border bg-card p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Texte décrypté (IA)
+                    </p>
+                    <p className="text-sm leading-relaxed mt-2">
+                      {latestAvis.texte_decrypte || latestAvis.texte_brut}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label htmlFor="ville_nom" className="form-label">
-                Ville
-              </label>
-              <input
-                id="ville_nom"
-                type="text"
-                disabled={updating}
-                value={formData.ville_nom || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, ville_nom: e.target.value }))
-                }
-                className="form-input"
-                placeholder="Paris"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="telephone" className="form-label">
-                Téléphone
-              </label>
-              <input
-                id="telephone"
-                type="tel"
-                disabled={updating}
-                value={formData.telephone || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, telephone: e.target.value }))
-                }
-                className="form-input"
-                placeholder="+33 1 23 45 67 89"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email_contact" className="form-label">
-                Email de contact
-              </label>
-              <input
-                id="email_contact"
-                type="email"
-                disabled={updating}
-                value={formData.email_contact || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, email_contact: e.target.value }))
-                }
-                className="form-input"
-                placeholder="contact@entreprise.com"
-              />
-              <p className="form-hint">Visible par les clients potentiels</p>
-            </div>
-
-            <div className="form-group form-group-full">
-              <label htmlFor="site_web" className="form-label">
-                Site web
-              </label>
-              <input
-                id="site_web"
-                type="url"
-                disabled={updating}
-                value={formData.site_web || ''}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, site_web: e.target.value }))
-                }
-                className="form-input"
-                placeholder="https://www.entreprise.com"
-              />
-              <p className="form-hint">Doit commencer par http:// ou https://</p>
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={updating}
-              className="btn-secondary"
-            >
-              Annuler
-            </button>
-            <button type="submit" disabled={updating} className="btn-primary">
-              {updating ? (
-                <span className="btn-loading">
-                  <svg className="spinner" viewBox="0 0 24 24">
-                    <circle
-                      className="spinner-circle"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                  </svg>
-                  Enregistrement...
-                </span>
-              ) : (
-                'Enregistrer les modifications'
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* Avis décrypté publié */}
-        <div className="published-review-section">
-          <h2 className="card-title">Avis décrypté publié</h2>
-          <p className="card-subtitle">
-            Consultez l'avis décrypté actuellement affiché sur votre fiche publique
-          </p>
-          <Link to="/client/avis" className="btn-outline">
-            Voir mes avis →
-          </Link>
-        </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" asChild>
+                    <Link to={`/client/avis/${latestAvis.id}`}>Voir détails</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to={`/entreprise/${latestAvis.pro_localisation}`}>Voir sur le site</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

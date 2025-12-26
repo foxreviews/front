@@ -126,6 +126,35 @@ class SearchService {
   }
 
   /**
+   * GetOne entreprise via URL SEO
+   * GET /api/entreprises/{categorie_slug}/{sous_categorie_slug}/ville/{ville_slug}/{entreprise_nom}
+   */
+  async getEntrepriseBySeo(
+    categorieSlug: string,
+    sousCategorieSlug: string,
+    villeSlug: string,
+    entrepriseNom: string,
+    showAll?: boolean
+  ): Promise<any> {
+    try {
+      const encodedNom = encodeURIComponent(entrepriseNom);
+      const { data } = await apiClient.get<any>(
+        `entreprises/${encodeURIComponent(categorieSlug)}/${encodeURIComponent(
+          sousCategorieSlug
+        )}/ville/${encodeURIComponent(villeSlug)}/${encodedNom}`,
+        {
+          params: showAll ? { show_all: true } : undefined,
+        }
+      );
+
+      return data;
+    } catch (error) {
+      console.error("Erreur lors du chargement SEO de l'entreprise:", error);
+      throw new Error("Impossible de charger les détails de l'entreprise");
+    }
+  }
+
+  /**
    * Vider le cache
    */
   clearCache(): void {

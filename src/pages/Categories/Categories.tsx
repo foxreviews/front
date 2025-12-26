@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { referenceService } from '../../services/reference.service';
 import type { Categorie } from '../../types/reference';
+import { SEO } from '../../components/SEO';
 import './Categories.css';
 
 export function Categories() {
@@ -121,6 +122,11 @@ export function Categories() {
 
   return (
     <div className="categories-container">
+      <SEO
+        title="Toutes les catégories"
+        description="Parcourez toutes les catégories et trouvez les meilleurs professionnels grâce aux avis 5★ certifiés."
+        keywords="catégories, annuaire, avis, professionnels"
+      />
       {/* Header */}
       <div className="categories-header">
         <h1 className="page-title">Toutes les catégories</h1>

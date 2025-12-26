@@ -13,9 +13,10 @@ export interface RegisterData {
   email: string;
   password: string;
   password_confirm: string;
-  name: string;
-  entreprise_name?: string;
+  name?: string;
+  entreprise_id?: string;
   siren?: string;
+  siret?: string;
 }
 
 export interface AuthToken {
@@ -23,13 +24,22 @@ export interface AuthToken {
 }
 
 export interface User {
-  id: string;
+  id: string | number;
   email: string;
   name: string;
   is_active: boolean;
   role?: UserRole;
   phone?: string;
   entreprise_id?: string;
+  entreprise?: {
+    id: string;
+    siren: string;
+    siret: string;
+    nom: string;
+    adresse: string;
+    code_postal: string;
+    ville_nom: string;
+  };
   created_at?: string;
   updated_at?: string;
 }
@@ -46,16 +56,25 @@ export interface AuthState {
  * Données du compte utilisateur
  */
 export interface AccountData {
-  id: string;
+  id: string | number;
   email: string;
   name: string;
   phone?: string;
   role: UserRole;
-  is_active: boolean;
+  is_active?: boolean;
   entreprise_id?: string;
   entreprise_nom?: string;
-  created_at: string;
-  updated_at: string;
+  entreprise?: {
+    id: string;
+    siren: string;
+    siret: string;
+    nom: string;
+    adresse: string;
+    code_postal: string;
+    ville_nom: string;
+  };
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**

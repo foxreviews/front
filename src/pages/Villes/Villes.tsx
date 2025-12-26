@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { referenceService } from '../../services/reference.service';
 import type { Ville } from '../../types/reference';
+import { SEO } from '../../components/SEO';
 import './Villes.css';
 
 export function Villes() {
@@ -140,6 +141,11 @@ export function Villes() {
 
   return (
     <div className="villes-container">
+      <SEO
+        title="Toutes les villes"
+        description="Parcourez toutes les villes et trouvez les meilleurs professionnels grâce aux avis 5★ certifiés."
+        keywords="villes, annuaire, avis, professionnels"
+      />
       {/* Header */}
       <div className="villes-header">
         <h1 className="page-title">Toutes les villes</h1>

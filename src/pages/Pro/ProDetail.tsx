@@ -1,10 +1,21 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useProLocalisation } from "../../hooks";
+import { useProLocalisation, useProLocalisationSeo } from "../../hooks";
 
 export default function ProDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id, categorie_slug, sous_categorie_slug, ville_slug, entreprise_nom } = useParams();
   const navigate = useNavigate();
-  const { data, loading, error } = useProLocalisation(id);
+
+  const isSeoRoute = !id && !!categorie_slug && !!sous_categorie_slug && !!ville_slug && !!entreprise_nom;
+
+  const proById = useProLocalisation(id as string | undefined);
+  const proBySeo = useProLocalisationSeo({
+    categorieSlug: categorie_slug,
+    sousCategorieSlug: sous_categorie_slug,
+    villeSlug: ville_slug,
+    entrepriseNom: entreprise_nom,
+  });
+
+  const { data, loading, error } = isSeoRoute ? proBySeo : proById;
 
   const entreprise = data?.entreprise;
   const sousCategorie = data?.sous_categorie_detail;
@@ -58,16 +69,27 @@ export default function ProDetail() {
             </div>
             <div className="md:w-56">
               <div className="rounded-2xl border border-gray-100 bg-gray-50/80 px-4 py-3 shadow-sm flex flex-col gap-2 items-start">
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-semibold text-orange-500">{data.note_moyenne.toFixed(1)}</span>
-                  <svg className="w-6 h-6 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Sources d'avis</h3>
+                <div className="space-y-2 w-full">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <span>Google</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>Trustpilot</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span>Yelp</span>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500">Basé sur {data.nb_avis} avis</p>
-                <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                  Score global : {data.score_global}
-                </span>
                 {data.is_verified && (
                   <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -138,11 +160,6 @@ export default function ProDetail() {
                       </li>
                     </>
                   )}
-                  <li>
-                    <span className="font-medium">Avis :</span> {data.nb_avis}
-                  </li>
-                  <li>
-                    <span className="font-medium">Note moyenne :</span> {data.note_moyenne.toFixed(1)}</li>
                 </ul>
               </div>
               {(entreprise?.telephone || entreprise?.email_contact || entreprise?.site_web) && (
