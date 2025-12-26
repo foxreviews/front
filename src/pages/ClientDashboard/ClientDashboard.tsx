@@ -1,6 +1,7 @@
 import { useDashboard } from '../../hooks';
 import { useAuth } from '../../hooks';
 import { Link } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
 import './ClientDashboard.css';
 
 export function ClientDashboard() {
@@ -10,9 +11,52 @@ export function ClientDashboard() {
   if (loading) {
     return (
       <div className="dashboard-container">
-        <div className="loading-state">
-          <div className="spinner-large"></div>
-          <p>Chargement du tableau de bord...</p>
+        <div className="dashboard-header">
+          <div>
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="mt-2 h-4 w-40" />
+          </div>
+          <Skeleton className="h-10 w-10 rounded-md" />
+        </div>
+
+        <div className="status-cards">
+          <div className="status-card">
+            <div className="status-card-header">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+            </div>
+            <div className="status-card-body">
+              <Skeleton className="h-8 w-40" />
+              <Skeleton className="mt-2 h-4 w-56" />
+            </div>
+            <div className="status-card-actions">
+              <Skeleton className="h-9 w-44 rounded-md" />
+            </div>
+          </div>
+
+          <div className="status-card">
+            <div className="status-card-header">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-6 w-16 rounded-md" />
+            </div>
+            <div className="status-card-body">
+              <Skeleton className="h-8 w-44" />
+              <Skeleton className="mt-2 h-4 w-48" />
+            </div>
+            <div className="status-card-actions">
+              <Skeleton className="h-9 w-40 rounded-md" />
+            </div>
+          </div>
+        </div>
+
+        <div className="stats-section">
+          <Skeleton className="h-6 w-32" />
+          <div className="stats-grid" style={{ marginTop: 16 }}>
+            <div className="stat-card"><Skeleton className="h-16 w-full" /></div>
+            <div className="stat-card"><Skeleton className="h-16 w-full" /></div>
+            <div className="stat-card"><Skeleton className="h-16 w-full" /></div>
+            <div className="stat-card"><Skeleton className="h-16 w-full" /></div>
+          </div>
         </div>
       </div>
     );
@@ -127,7 +171,7 @@ export function ClientDashboard() {
           </div>
           <div className="status-card-actions">
             {!isSponsored && (
-              <Link to="/client/sponsorship" className="btn-primary">
+              <Link to="/sponsorisation/abonnement" className="btn-primary">
                 Passer en sponsorisé
               </Link>
             )}

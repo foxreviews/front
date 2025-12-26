@@ -25,7 +25,7 @@ class ExportService {
    */
   async exportEntreprises(): Promise<Blob> {
     try {
-      const { data } = await apiClient.get('/export/entreprises/', {
+      const { data } = await apiClient.get('export/entreprises/', {
         responseType: 'blob',
       });
       return new Blob([data], { type: 'text/csv' });
@@ -40,7 +40,7 @@ class ExportService {
    */
   async exportProLocalisations(): Promise<Blob> {
     try {
-      const { data } = await apiClient.get('/export/prolocalisations/', {
+      const { data } = await apiClient.get('export/prolocalisations/', {
         responseType: 'blob',
       });
       return new Blob([data], { type: 'text/csv' });
@@ -55,7 +55,7 @@ class ExportService {
    */
   async exportAvis(): Promise<Blob> {
     try {
-      const { data } = await apiClient.get('/export/avis/', {
+      const { data } = await apiClient.get('export/avis/', {
         responseType: 'blob',
       });
       return new Blob([data], { type: 'text/csv' });
@@ -70,7 +70,7 @@ class ExportService {
    */
   async exportPagesWordPress(): Promise<any> {
     try {
-      const { data } = await apiClient.get('/export/pages-wordpress/');
+      const { data } = await apiClient.get('export/pages-wordpress/');
       return data;
     } catch (error) {
       throw this.handleError(error, 'Impossible d\'exporter les pages WordPress');
@@ -83,7 +83,7 @@ class ExportService {
    */
   async getStats(): Promise<any> {
     try {
-      const { data } = await apiClient.get('/export/stats/');
+      const { data } = await apiClient.get('export/stats/');
       return data;
     } catch (error) {
       throw this.handleError(error, 'Impossible de charger les statistiques');

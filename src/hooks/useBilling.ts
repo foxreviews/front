@@ -11,7 +11,7 @@ import type {
  */
 export function useBilling() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -33,24 +33,24 @@ export function useBilling() {
     }
   }, []);
 
-  const fetchSubscription = useCallback(async () => {
+  const fetchSubscriptions = useCallback(async () => {
     try {
-      const data = await billingService.getSubscription();
-      setSubscription(data);
+      const data = await billingService.getSubscriptions();
+      setSubscriptions(data);
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 
-        : 'Impossible de charger l\'abonnement';
+        : 'Impossible de charger les abonnements';
       setError(errorMessage);
     }
   }, []);
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([fetchInvoices(), fetchSubscription()]);
+      await Promise.all([fetchInvoices(), fetchSubscriptions()]);
     };
     loadData();
-  }, [fetchInvoices, fetchSubscription]);
+  }, [fetchInvoices, fetchSubscriptions]);
 
   const createCheckout = useCallback(async (request: CreateCheckoutRequest): Promise<string | null> => {
     setProcessing(true);
@@ -70,37 +70,18 @@ export function useBilling() {
     }
   }, []);
 
-  const cancelSubscription = useCallback(async (_subscriptionId: string): Promise<boolean> => {
+  const openPortal = useCallback(async (returnUrl: string): Promise<boolean> => {
     setProcessing(true);
     setError(null);
 
     try {
-      // TODO: Implement cancelSubscription in billing service
-      setError('Fonctionnalité non implémentée');
-      return false;
+      const { url } = await billingService.createCustomerPortalSession(returnUrl);
+      window.location.href = url;
+      return true;
     } catch (err) {
-      const errorMessage = err instanceof BillingError 
-        ? err.message 
-        : 'Impossible d\'annuler l\'abonnement';
-      setError(errorMessage);
-      return false;
-    } finally {
-      setProcessing(false);
-    }
-  }, []);
-
-  const reactivateSubscription = useCallback(async (_subscriptionId: string): Promise<boolean> => {
-    setProcessing(true);
-    setError(null);
-
-    try {
-      // TODO: Implement reactivateSubscription in billing service
-      setError('Fonctionnalité non implémentée');
-      return false;
-    } catch (err) {
-      const errorMessage = err instanceof BillingError 
-        ? err.message 
-        : 'Impossible de réactiver l\'abonnement';
+      const errorMessage = err instanceof BillingError
+        ? err.message
+        : 'Impossible d\'accéder au portail de gestion';
       setError(errorMessage);
       return false;
     } finally {
@@ -121,18 +102,20 @@ export function useBilling() {
 
   const refresh = useCallback(() => {
     fetchInvoices();
-    fetchSubscription();
-  }, [fetchInvoices, fetchSubscription]);
+    fetchSubscriptions();
+  }, [fetchInvoices, fetchSubscriptions]);
+
+  const activeSubscription = subscriptions.find((s) => s.status === 'active') || null;
 
   return {
     invoices,
-    subscription,
+    subscriptions,
+    subscription: activeSubscription,
     loading,
     error,
     processing,
     createCheckout,
-    cancelSubscription,
-    reactivateSubscription,
+    openPortal,
     downloadInvoice,
     refresh,
     formatAmount: billingService.formatAmount.bind(billingService),
@@ -159,9 +142,8 @@ export function useInvoice(invoiceId: string | null) {
     setError(null);
 
     try {
-      // TODO: Implement getInvoiceDetail in billing service
-      setError('Fonctionnalité non implémentée');
-      setInvoice(null);
+      const data = await billingService.getInvoiceDetail(invoiceId);
+      setInvoice(data);
     } catch (err) {
       const errorMessage = err instanceof BillingError 
         ? err.message 

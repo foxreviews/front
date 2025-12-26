@@ -46,10 +46,7 @@ class BillingService {
         throw new BillingError('URLs de redirection manquantes', 400);
       }
 
-      const { data } = await apiClient.post<CreateCheckoutResponse>(
-        '/stripe/create-checkout/',
-        request
-      );
+      const { data } = await apiClient.post<CreateCheckoutResponse>('sponsorisation/checkout/', request);
 
       if (!data.checkout_url || !data.session_id) {
         throw new BillingError('Réponse invalide du serveur', 500);
@@ -63,12 +60,63 @@ class BillingService {
   }
 
   /**
+   * Ouvre le Customer Portal Stripe
+   */
+  async createCustomerPortalSession(returnUrl: string): Promise<{ url: string }> {
+    try {
+      const { data } = await apiClient.post<{ url: string }>('billing/portal/', {
+        return_url: returnUrl,
+      });
+
+      if (!data.url) {
+        throw new BillingError('URL du portail non reçue', 500);
+      }
+
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible d\'accéder au portail de gestion');
+    }
+  }
+
+  /**
+   * Liste des abonnements
+   */
+  async getSubscriptions(): Promise<Subscription[]> {
+    try {
+      const { data } = await apiClient.get<Subscription[]>('billing/api/subscriptions/');
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de charger les abonnements');
+    }
+  }
+
+  /**
+   * Compat: retourne l'abonnement actif (ou null)
+   */
+  async getSubscription(): Promise<Subscription | null> {
+    const subscriptions = await this.getSubscriptions();
+    return subscriptions.find((s) => s.status === 'active') || null;
+  }
+
+  /**
+   * Détails d'un abonnement
+   */
+  async getSubscriptionDetail(subscriptionId: number | string): Promise<Subscription> {
+    try {
+      const { data } = await apiClient.get<Subscription>(`billing/api/subscriptions/${subscriptionId}/`);
+      return data;
+    } catch (error) {
+      throw this.handleError(error, 'Impossible de charger le détail de l\'abonnement');
+    }
+  }
+
+  /**
    * Récupère l'historique des factures
    * @throws {BillingError} Si la requête échoue
    */
   async getInvoices(): Promise<Invoice[]> {
     try {
-      const { data } = await apiClient.get<Invoice[]>('/billing/invoices/');
+      const { data } = await apiClient.get<Invoice[]>('billing/api/invoices/');
       return data;
     } catch (error) {
       throw this.handleError(error, 'Impossible de charger l\'historique des factures');
@@ -76,18 +124,14 @@ class BillingService {
   }
 
   /**
-   * Récupère les informations d'abonnement actif
-   * @throws {BillingError} Si la requête échoue
+   * Détails d'une facture
    */
-  async getSubscription(): Promise<Subscription | null> {
+  async getInvoiceDetail(invoiceId: number | string): Promise<Invoice> {
     try {
-      const { data } = await apiClient.get<Subscription>('/billing/subscription/');
+      const { data } = await apiClient.get<Invoice>(`billing/api/invoices/${invoiceId}/`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        return null; // Pas d'abonnement actif
-      }
-      throw this.handleError(error, 'Impossible de charger l\'abonnement');
+      throw this.handleError(error, 'Impossible de charger la facture');
     }
   }
 
@@ -160,7 +204,7 @@ class BillingService {
       // Message spécifique pour limite de sponsors
       if (axiosError.response?.status === 403) {
         return new BillingError(
-          'La limite de 5 sponsors est atteinte pour cette localisation',
+          axiosError.response?.data?.error || 'Limite de 5 sponsors atteinte pour cette catégorie/ville',
           403
         );
       }

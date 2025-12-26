@@ -5,12 +5,11 @@ import './Billing.css';
 export function Billing() {
   const {
     invoices,
-    subscription,
+    subscriptions,
+    openPortal,
     loading,
     error,
     processing,
-    cancelSubscription,
-    reactivateSubscription,
     downloadInvoice,
     refresh,
     formatAmount,
@@ -18,25 +17,15 @@ export function Billing() {
     getStatusLabel,
   } = useBilling();
 
-  const handleCancelSubscription = async () => {
-    if (!subscription?.id) return;
-
-    const confirmed = window.confirm(
-      'Êtes-vous sûr de vouloir annuler votre abonnement ? Il restera actif jusqu\'à la fin de la période en cours.'
-    );
-
-    if (confirmed) {
-      await cancelSubscription(subscription.id);
-    }
+  const buildStripeReturnUrl = (pathWithQuery: string) => {
+    // HashRouter: Stripe return_url must include "#/..."
+    const base = `${window.location.origin}${window.location.pathname}`;
+    const normalizedPath = pathWithQuery.startsWith('/') ? pathWithQuery : `/${pathWithQuery}`;
+    return `${base}#${normalizedPath}`;
   };
 
-  const handleReactivateSubscription = async () => {
-    if (!subscription?.id) return;
-
-    const success = await reactivateSubscription(subscription.id);
-    if (success) {
-      alert('Votre abonnement a été réactivé avec succès');
-    }
+  const handleOpenPortal = async () => {
+    await openPortal(buildStripeReturnUrl('/client/account/billing'));
   };
 
   if (loading) {
@@ -83,90 +72,85 @@ export function Billing() {
         </Link>
       </div>
 
-      {/* Subscription Card */}
-      {subscription && (
-        <div className="subscription-card">
-          <div className="subscription-header">
-            <div>
-              <h2 className="card-title">Abonnement actuel</h2>
-              <p className="card-subtitle">Gérez votre abonnement sponsorisé</p>
-            </div>
-            <span className={`subscription-status status-${subscription.status}`}>
-              {getStatusLabel(subscription.status)}
-            </span>
-          </div>
-
-          <div className="subscription-details">
-            <div className="detail-item">
-              <span className="detail-label">Montant</span>
-              <span className="detail-value">
-                {formatAmount(subscription.amount)} / mois
-              </span>
-            </div>
-
-            <div className="detail-item">
-              <span className="detail-label">Période en cours</span>
-              <span className="detail-value">
-                Du {formatDate(subscription.current_period_start)} au{' '}
-                {formatDate(subscription.current_period_end)}
-              </span>
-            </div>
-
-            <div className="detail-item">
-              <span className="detail-label">Prochain paiement</span>
-              <span className="detail-value">
-                {subscription.cancel_at_period_end
-                  ? 'Annulation planifiée'
-                  : formatDate(subscription.current_period_end)}
-              </span>
-            </div>
-          </div>
-
-          <div className="subscription-actions">
-            {subscription.status === 'active' && !subscription.cancel_at_period_end && (
-              <button
-                onClick={handleCancelSubscription}
-                disabled={processing}
-                className="btn-danger"
-              >
-                Annuler l'abonnement
-              </button>
-            )}
-
-            {subscription.cancel_at_period_end && (
-              <button
-                onClick={handleReactivateSubscription}
-                disabled={processing}
-                className="btn-primary"
-              >
-                Réactiver l'abonnement
-              </button>
-            )}
-
-            {subscription.status === 'past_due' && (
-              <div className="payment-warning">
-                <svg className="warning-icon" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+      {/* Subscriptions */}
+      {subscriptions.length > 0 ? (
+        <>
+          {subscriptions.map((sub) => (
+            <div key={String(sub.id)} className="subscription-card">
+              <div className="subscription-header">
                 <div>
-                  <strong>Paiement en retard</strong>
-                  <p>
-                    Votre dernier paiement a échoué. Veuillez mettre à jour votre moyen de
-                    paiement.
+                  <h2 className="card-title">
+                    {sub.status === 'active' ? 'Abonnement actif' : 'Abonnement'}
+                  </h2>
+                  <p className="card-subtitle">
+                    {sub.entreprise_nom
+                      ? sub.pro_localisation_info
+                        ? `${sub.entreprise_nom} • ${sub.pro_localisation_info.sous_categorie} • ${sub.pro_localisation_info.ville}`
+                        : sub.entreprise_nom
+                      : sub.pro_localisation_info
+                        ? `${sub.pro_localisation_info.sous_categorie} • ${sub.pro_localisation_info.ville}`
+                        : 'Sponsorisation'}
                   </p>
                 </div>
+                <span className={`subscription-status status-${sub.status}`}>
+                  {getStatusLabel(sub.status)}
+                </span>
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* No Subscription */}
-      {!subscription && (
+              <div className="subscription-details">
+                <div className="detail-item">
+                  <span className="detail-label">Montant</span>
+                  <span className="detail-value">
+                    {formatAmount(sub.amount)} / mois
+                  </span>
+                </div>
+
+                <div className="detail-item">
+                  <span className="detail-label">Période</span>
+                  <span className="detail-value">
+                    Du {formatDate(sub.current_period_start)} au {formatDate(sub.current_period_end)}
+                  </span>
+                </div>
+
+                <div className="detail-item">
+                  <span className="detail-label">Renouvellement</span>
+                  <span className="detail-value">
+                    {sub.cancel_at_period_end ? 'Annulation planifiée' : formatDate(sub.current_period_end)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="subscription-actions">
+                <button
+                  onClick={handleOpenPortal}
+                  disabled={processing}
+                  className="btn-primary"
+                >
+                  Gérer via Stripe
+                </button>
+
+                {sub.status === 'past_due' && (
+                  <div className="payment-warning">
+                    <svg className="warning-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>
+                      <strong>Paiement en retard</strong>
+                      <p>
+                        Votre dernier paiement a échoué. Veuillez mettre à jour votre moyen de paiement.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </>
+      ) : (
         <div className="no-subscription">
           <svg className="subscription-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -230,10 +214,7 @@ export function Billing() {
                     <td className="invoice-number">{invoice.invoice_number}</td>
                     <td>{formatDate(invoice.created_at)}</td>
                     <td className="invoice-amount">
-                      {new Intl.NumberFormat('fr-FR', {
-                        style: 'currency',
-                        currency: invoice.currency.toUpperCase(),
-                      }).format(invoice.amount_due / 100)}
+                      {formatAmount(invoice.amount_due)}
                     </td>
                     <td>
                       <span className={`invoice-status status-${invoice.status}`}>

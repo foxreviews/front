@@ -108,11 +108,12 @@ export default function Subscribe() {
     setProcessing(true);
 
     try {
-      const successUrl = buildStripeReturnUrl('/sponsorisation/abonnement?success=true');
-      const cancelUrl = buildStripeReturnUrl('/sponsorisation/abonnement?canceled=true');
+      const successUrl = buildStripeReturnUrl('/client/billing/success');
+      const cancelUrl = buildStripeReturnUrl('/client/billing/cancel');
 
       const { checkout_url } = await billingService.createCheckoutSession({
         pro_localisation_id: proLocalisationId,
+        duration_months: 1,
         success_url: successUrl,
         cancel_url: cancelUrl,
       });

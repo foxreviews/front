@@ -2,7 +2,9 @@ module.exports = {
   apps: [{
     name: 'fox-reviews-front',
     script: 'npx',
-    args: ['serve', 'dist', '-s', '-p', '3005'],
+    // `-c 0` avoids clients caching an old entry chunk that references
+    // now-deleted hashed chunks after a redeploy.
+    args: ['serve', 'dist', '-s', '-p', '3005', '-c', '0'],
     instances: 1,
     autorestart: true,
     watch: false,

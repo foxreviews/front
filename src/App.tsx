@@ -18,6 +18,8 @@ const Villes = lazy(() => import('./pages/Villes/Villes').then(m => ({ default: 
 const Login = lazy(() => import('./pages/Auth').then(m => ({ default: m.Login })));
 const Register = lazy(() => import('./pages/Auth').then(m => ({ default: m.Register })));
 const ForgotPassword = lazy(() => import('./pages/Auth').then(m => ({ default: m.ForgotPassword })));
+const Upgrade = lazy(() => import('./pages/Auth').then(m => ({ default: m.Upgrade })));
+const PaymentSuccess = lazy(() => import('./pages/Auth').then(m => ({ default: m.PaymentSuccess })));
 
 // Pages légales lazy
 const About = lazy(() => import('./pages/Legal').then(m => ({ default: m.About })));
@@ -32,6 +34,8 @@ const ClientDashboard = lazy(() => import('./pages/ClientDashboard').then(m => (
 const EntrepriseManagement = lazy(() => import('./pages/EntrepriseManagement').then(m => ({ default: m.EntrepriseManagement })));
 const AvisUpload = lazy(() => import('./pages/AvisUpload').then(m => ({ default: m.AvisUpload })));
 const Billing = lazy(() => import('./pages/Billing').then(m => ({ default: m.Billing })));
+const BillingSuccess = lazy(() => import('./pages/Billing/Success').then(m => ({ default: m.BillingSuccess })));
+const BillingCancel = lazy(() => import('./pages/Billing/Cancel').then(m => ({ default: m.BillingCancel })));
 
 // Sponsorisation
 const Subscribe = lazy(() => import('./pages/Sponsorship/Subscribe').then(m => ({ default: m.default })));
@@ -62,12 +66,17 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           
           {/* Espace Client */}
           <Route path="/client/dashboard" element={<ClientDashboard />} />
           <Route path="/client/entreprise" element={<EntrepriseManagement />} />
           <Route path="/client/upload-avis" element={<AvisUpload />} />
           <Route path="/client/billing" element={<Billing />} />
+          <Route path="/client/account/billing" element={<Billing />} />
+          <Route path="/client/billing/success" element={<BillingSuccess />} />
+          <Route path="/client/billing/cancel" element={<BillingCancel />} />
 
           {/* Sponsorisation */}
           <Route path="/sponsorisation/abonnement" element={<Subscribe />} />

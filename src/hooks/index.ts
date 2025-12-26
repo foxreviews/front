@@ -21,3 +21,4 @@ export { useExport } from "./useExport";
 export { useUsers, useUser } from "./useUsers";
 export { useAccount } from "./useAccount";
 export { usePermissions, Permission, withPermission, withRole } from "./usePermissions";
+export { useStripe } from "./useStripe";

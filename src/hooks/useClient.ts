@@ -11,11 +11,6 @@ export function useDashboard(entrepriseId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = useCallback(async () => {
-    if (!entrepriseId) {
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
